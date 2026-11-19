@@ -14,6 +14,7 @@ Trạng thái: `dự kiến` · `đang làm` · `xong` · `bỏ`.
 | Độ rộng khung chat | `chatWidthEnabled`, `chatWidthPercent`, `chatWidthMaxRem` | % khung kẹp tối đa theo rem; bản px cũ đã bỏ | Chat Width | `features/chat-width.tsx`; selector nội bộ BB, dễ vỡ khi BB cập nhật |
 | Cỡ chữ co giãn | `fontScaleEnabled`, `fontScalePercent` | đã build, chờ chạy thử | tự viết (tham khảo UI Scale, Fonts) | `features/font-scale.tsx`; đổi `font-size` gốc theo `vw`, kẹp ±15%; ảnh hưởng cả UI nếu BB dùng rem |
 | Theme Hagi Amber (màu ấm + font mono + bo góc + ANSI) | `bb.themes` trong package.json | đã build, chờ chọn thử | tự viết theo ảnh mẫu của người dùng (không chép code) | `themes/hagi-amber.css`; hiện ở Settings → Appearance, không có công tắc vì chọn theme mới là "bật". Font nằm trong cùng file theme (`--font-sans/mono/terminal`). Đã thêm: nền nâu-xám ấm, hàng chọn đỏ-cam, `--radius .65rem`, sidebar/viền sáng hơn, 16 màu ANSI, `--spacing .27rem` (chưa xác minh có tác dụng). Spec: `themes/hagi-amber.spec.md`. Thẻ + popover + ô nhập tin nhắn dark `#1a1815`. Không làm được: bố cục riêng của ảnh mẫu (Game View, thanh hàng cuộn...) |
+| Nền ô nhập tin nhắn | `composerBgEnabled`, `composerBgColor` | mới | tự viết | `features/composer-surface.tsx`; dò khung bo góc quanh ô gõ lúc chạy (không dựa tên class BB), đặt nền bằng style. Chưa kiểm chứng trên BB thật |
 | Bố cục chat (còn lại) | `layout*` | dự kiến | Auto-hide Panel | thay sidebar thì để ở hagi-thread-nav |
 | Ngôn ngữ tiếng Việt | `langVi` | dự kiến | 简体中文语言包 (MIT) | làm sau cùng, việc dịch rất lớn |
 

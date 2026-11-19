@@ -107,8 +107,3 @@
   --surface-selected: color-mix(in oklch, #d4694a 38%, var(--canvas));
   --surface-selected-border: #d4694a;
 }
-
-/* Ô nhập tin nhắn (chỉ bản tối). Selector [data-composer-box] là nội bộ BB, có thể đổi khi BB cập nhật. */
-.dark [data-composer-box] {
-  background-color: #1a1815;
-}

@@ -43,6 +43,19 @@ export default async function plugin(bb: BbPluginApi) {
       description: "Chữ to dần khi cửa sổ rộng, nhỏ lại khi hẹp (±15%). Tắt = BB giữ nguyên.",
       default: false,
     },
+    composerBgEnabled: {
+      type: "boolean",
+      label: "Đổi nền ô nhập tin nhắn",
+      description: "Tắt = BB giữ nguyên. Plugin tự dò khung quanh ô gõ rồi đặt màu bên dưới.",
+      default: false,
+    },
+    composerBgColor: {
+      type: "string",
+      label: "Màu nền ô nhập tin nhắn",
+      description: "Mã hex, ví dụ #1a1815.",
+      default: "#1a1815",
+      experimental_schema: z.string().regex(/^#[0-9a-fA-F]{3,8}$/),
+    },
     fontScalePercent: num("Cỡ chữ (%)", "0 = theo preset (92 / 100 / 108). Nhập 110 = to hơn 10%.", 150),
   });
 }
