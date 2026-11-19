@@ -8,12 +8,9 @@ export default async function plugin(bb: BbPluginApi) {
     chatWidthEnabled: { type: "boolean", label: "Chỉnh độ rộng khung chat", default: false },
     chatWidthMode: {
       type: "select",
-      label: "Cách tính độ rộng khung chat",
+      label: "Cách tính độ rộng khung chat (percent hoặc px)",
       default: "percent",
-      options: [
-        { value: "percent", label: "Theo % khung (có giới hạn tối đa px)" },
-        { value: "px", label: "Cố định px" },
-      ],
+      options: ["percent", "px"], // percent = % khung có kẹp tối đa theo chatWidth; px = cố định
     },
     chatWidth: {
       type: "number",
