@@ -1,11 +1,17 @@
-/* Hagi Amber: nền gần đen, nhấn vàng hổ phách, toàn bộ chữ dùng font mono.
-   Bảng màu và font tự đặt theo ảnh mẫu của người dùng, không chép code của theme nào. */
+/* Hagi Amber: nền nâu-xám ấm, nhấn vàng hổ phách, hàng chọn đỏ-cam, toàn bộ chữ dùng font mono.
+   Bảng màu và font tự đặt theo ảnh mẫu của người dùng (màu ước lượng bằng mắt), không chép code của theme nào.
+   Xem themes/hagi-amber.spec.md. */
 :root,
 .light {
   /* Font mono cho cả giao diện. Máy chưa có JetBrains Mono / Geist Mono thì tự rơi về Consolas, Menlo... */
   --font-sans: "JetBrains Mono", "Geist Mono", "Berkeley Mono", "SF Mono", ui-monospace, Menlo, Consolas, monospace;
   --font-mono: "JetBrains Mono", "Geist Mono", "Berkeley Mono", "SF Mono", ui-monospace, Menlo, Consolas, monospace;
   --font-terminal: "JetBrains Mono", "Geist Mono", "Berkeley Mono", "SF Mono", ui-monospace, Menlo, Consolas, monospace;
+
+  /* Bo góc vừa (mặc định BB là .5rem). */
+  --radius: 0.65rem;
+  /* Thử nới khoảng cách ~8%. Chưa xác minh BB có theo biến này; không thấy đổi thì xoá dòng. */
+  --spacing: 0.27rem;
 
   /* Bản sáng: giấy ấm, giữ cùng nhấn hổ phách. */
   --canvas: #f5f1e8;
@@ -19,13 +25,61 @@
   --destructive-text: #a23220;
   --warning: #b9770e;
   --warning-text: #8f5a08;
+  --attention: #b9770e;
   --success: #3f8f3f;
   --diff-added: #3f8f3f;
   --diff-removed: #c4412b;
+  --pr-merged: #8250c8;
   --file-accent: #b9770e;
+
+  /* Sidebar tách khỏi nền; viền sáng rõ hơn mặc định (ink 14%/10%/30%). */
+  --sidebar: color-mix(in oklch, var(--ink) 5%, var(--canvas));
+  --border: color-mix(in oklch, var(--ink) 20%, var(--canvas));
+  --border-hairline: color-mix(in oklch, var(--ink) 20%, var(--canvas));
+  --border-seam: color-mix(in oklch, var(--ink) 15%, var(--canvas));
+  --input: color-mix(in oklch, var(--ink) 34%, var(--canvas));
+
+  /* Hàng đang chọn: đỏ-cam (ước lượng từ ảnh), khác hẳn nhấn vàng. */
+  --surface-selected: color-mix(in oklch, #d4694a 22%, var(--canvas));
+  --surface-selected-border: #d4694a;
+
+  /* Terminal: bảng màu ấm. Dùng cho cả sáng và tối. */
+  --ansi-0: #1c1b18;
+  --ansi-1: #e5604a;
+  --ansi-2: #52c05c;
+  --ansi-3: #f2b13c;
+  --ansi-4: #4aa3d0;
+  --ansi-5: #c678b8;
+  --ansi-6: #4fb8a8;
+  --ansi-7: #d8d3c7;
+  --ansi-8: #6b665a;
+  --ansi-9: #f08a78;
+  --ansi-10: #7ad483;
+  --ansi-11: #f5c56b;
+  --ansi-12: #7cc0e6;
+  --ansi-13: #dc9bd0;
+  --ansi-14: #7fd1c3;
+  --ansi-15: #f5f1e8;
+  --ansi-bg-fg-0: #ece8df;
+  --ansi-bg-fg-1: #14110a;
+  --ansi-bg-fg-2: #14110a;
+  --ansi-bg-fg-3: #14110a;
+  --ansi-bg-fg-4: #14110a;
+  --ansi-bg-fg-5: #14110a;
+  --ansi-bg-fg-6: #14110a;
+  --ansi-bg-fg-7: #14110a;
+  --ansi-bg-fg-8: #ece8df;
+  --ansi-bg-fg-9: #14110a;
+  --ansi-bg-fg-10: #14110a;
+  --ansi-bg-fg-11: #14110a;
+  --ansi-bg-fg-12: #14110a;
+  --ansi-bg-fg-13: #14110a;
+  --ansi-bg-fg-14: #14110a;
+  --ansi-bg-fg-15: #14110a;
 }
 .dark {
-  --canvas: #0f0f10;
+  /* Nền nâu-xám ấm (ước lượng bằng mắt từ ảnh mẫu). */
+  --canvas: #1c1b18;
   --ink: #ece8df;
   --primary: #f2b13c;
   --primary-foreground: #14110a;
@@ -33,8 +87,19 @@
   --destructive-text: #f08a78;
   --warning: #f2b13c;
   --warning-text: #f5c56b;
+  --attention: #f2b13c;
   --success: #52c05c;
   --diff-added: #52c05c;
   --diff-removed: #e5604a;
+  --pr-merged: #b48ae6;
   --file-accent: #f2b13c;
+
+  /* Khai lại để pha theo canvas/ink của bản tối. */
+  --sidebar: color-mix(in oklch, var(--ink) 4%, var(--canvas));
+  --border: color-mix(in oklch, var(--ink) 20%, var(--canvas));
+  --border-hairline: color-mix(in oklch, var(--ink) 20%, var(--canvas));
+  --border-seam: color-mix(in oklch, var(--ink) 15%, var(--canvas));
+  --input: color-mix(in oklch, var(--ink) 34%, var(--canvas));
+  --surface-selected: color-mix(in oklch, #d4694a 38%, var(--canvas));
+  --surface-selected-border: #d4694a;
 }
