@@ -44,7 +44,7 @@
   --surface-selected-border: #d4694a;
 
   /* Terminal: bảng màu ấm. Dùng cho cả sáng và tối. */
-  --ansi-0: #1c1b18;
+  --ansi-0: #171614;
   --ansi-1: #e5604a;
   --ansi-2: #52c05c;
   --ansi-3: #f2b13c;
@@ -78,8 +78,8 @@
   --ansi-bg-fg-15: #14110a;
 }
 .dark {
-  /* Nền nâu-xám ấm (ước lượng bằng mắt từ ảnh mẫu). */
-  --canvas: #1c1b18;
+  /* Nền khung chính #0f0e0c, sidebar #171614 (mã người dùng đo từ ảnh mẫu): sidebar SÁNG hơn khung chính. */
+  --canvas: #0f0e0c;
   --ink: #ece8df;
   --primary: #f2b13c;
   --primary-foreground: #14110a;
@@ -95,7 +95,7 @@
   --file-accent: #f2b13c;
 
   /* Khai lại để pha theo canvas/ink của bản tối. */
-  --sidebar: color-mix(in oklch, var(--ink) 4%, var(--canvas));
+  --sidebar: #171614;
   --border: color-mix(in oklch, var(--ink) 20%, var(--canvas));
   --border-hairline: color-mix(in oklch, var(--ink) 20%, var(--canvas));
   --border-seam: color-mix(in oklch, var(--ink) 15%, var(--canvas));
