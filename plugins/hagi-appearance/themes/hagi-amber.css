@@ -1,0 +1,40 @@
+/* Hagi Amber: nền gần đen, nhấn vàng hổ phách, toàn bộ chữ dùng font mono.
+   Bảng màu và font tự đặt theo ảnh mẫu của người dùng, không chép code của theme nào. */
+:root,
+.light {
+  /* Font mono cho cả giao diện. Máy chưa có JetBrains Mono / Geist Mono thì tự rơi về Consolas, Menlo... */
+  --font-sans: "JetBrains Mono", "Geist Mono", "Berkeley Mono", "SF Mono", ui-monospace, Menlo, Consolas, monospace;
+  --font-mono: "JetBrains Mono", "Geist Mono", "Berkeley Mono", "SF Mono", ui-monospace, Menlo, Consolas, monospace;
+  --font-terminal: "JetBrains Mono", "Geist Mono", "Berkeley Mono", "SF Mono", ui-monospace, Menlo, Consolas, monospace;
+
+  /* Bản sáng: giấy ấm, giữ cùng nhấn hổ phách. */
+  --canvas: #f5f1e8;
+  --ink: #26221b;
+  --primary: #b9770e;
+  --primary-foreground: #fffaf0;
+  --muted-foreground: color-mix(in oklch, var(--ink) 70%, var(--canvas));
+  --subtle-foreground: color-mix(in oklch, var(--ink) 58%, var(--canvas));
+  --readback-foreground: color-mix(in oklch, var(--ink) 64%, var(--canvas));
+  --destructive: #c4412b;
+  --destructive-text: #a23220;
+  --warning: #b9770e;
+  --warning-text: #8f5a08;
+  --success: #3f8f3f;
+  --diff-added: #3f8f3f;
+  --diff-removed: #c4412b;
+  --file-accent: #b9770e;
+}
+.dark {
+  --canvas: #0f0f10;
+  --ink: #ece8df;
+  --primary: #f2b13c;
+  --primary-foreground: #14110a;
+  --destructive: #e5604a;
+  --destructive-text: #f08a78;
+  --warning: #f2b13c;
+  --warning-text: #f5c56b;
+  --success: #52c05c;
+  --diff-added: #52c05c;
+  --diff-removed: #e5604a;
+  --file-accent: #f2b13c;
+}

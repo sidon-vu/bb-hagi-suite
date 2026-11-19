@@ -15,9 +15,7 @@
     "server": "./server.ts",
     "app": "./app.tsx",
     "themes": [
-      { "id": "hagi-night", "name": "Hagi Night", "description": "Xanh đêm, tông lạnh", "css": "./themes/hagi-night.css" },
-      { "id": "hagi-sand", "name": "Hagi Sand", "description": "Nền kem ấm, dịu mắt", "css": "./themes/hagi-sand.css" },
-      { "id": "hagi-mono", "name": "Hagi Mono", "description": "Đen xám tương phản cao, nhấn xanh lá", "css": "./themes/hagi-mono.css" }
+      { "id": "hagi-amber", "name": "Hagi Amber", "description": "Nền gần đen, nhấn vàng hổ phách, font mono toàn giao diện", "css": "./themes/hagi-amber.css" }
     ]
   },
   "devDependencies": {
