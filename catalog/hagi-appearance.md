@@ -10,8 +10,10 @@ Trạng thái: `dự kiến` · `đang làm` · `xong` · `bỏ`.
 | Tính năng | Khóa công tắc | Trạng thái | Lấy ý từ plugin | Ghi chú |
 |---|---|---|---|---|
 | Màu sắc | `colorTheme` (chọn 1 bộ) | dự kiến | Ayu, Tokyo Night, Vercel Theme, bb Monokai | chỉ 1 bộ màu đang dùng, nên dùng ô chọn |
-| Độ rộng khung chat | `chatWidthEnabled`, `chatWidth` | đã build, chưa chạy thử (server BB ở máy khác, chưa cài được) | Chat Width | `features/chat-width.tsx`; selector nội bộ BB, dễ vỡ khi BB cập nhật |
-| Bố cục chat (còn lại) | `layout*` | dự kiến | UI Scale, Auto-hide Panel, Fonts | thay sidebar thì để ở hagi-thread-nav |
+| Preset giao diện | `preset` (compact / comfortable / wide) | đã build, chờ chạy thử | tự viết | `features/presets.ts`; chỉ đặt tỷ lệ (%, rem), không px cố định. Ô số riêng: 0 = theo preset |
+| Độ rộng khung chat | `chatWidthEnabled`, `chatWidthPercent`, `chatWidthMaxRem` | % khung kẹp tối đa theo rem; bản px cũ đã bỏ | Chat Width | `features/chat-width.tsx`; selector nội bộ BB, dễ vỡ khi BB cập nhật |
+| Cỡ chữ co giãn | `fontScaleEnabled`, `fontScalePercent` | đã build, chờ chạy thử | tự viết (tham khảo UI Scale, Fonts) | `features/font-scale.tsx`; đổi `font-size` gốc theo `vw`, kẹp ±15%; ảnh hưởng cả UI nếu BB dùng rem |
+| Bố cục chat (còn lại) | `layout*` | dự kiến | Auto-hide Panel | thay sidebar thì để ở hagi-thread-nav |
 | Ngôn ngữ tiếng Việt | `langVi` | dự kiến | 简体中文语言包 (MIT) | làm sau cùng, việc dịch rất lớn |
 
 ## Plugin tham khảo (72, tạo ngày 2026-11-19 từ `bb plugin search`)

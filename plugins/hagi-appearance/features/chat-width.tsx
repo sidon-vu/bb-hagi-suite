@@ -1,18 +1,15 @@
 import { useEffect } from "react";
-import { useSettings } from "@get-bb/plugin-sdk/app";
+import { useAppearance } from "./presets";
 import "./chat-width.css";
 
 // Chạy khi công tắc bật; tắt hoặc gỡ plugin thì dọn sạch thuộc tính trên <html>.
 export function ChatWidth() {
-  const { values } = useSettings();
-  const on = values?.chatWidthEnabled === true;
-  const px = Number(values?.chatWidth) || 1040;
-  const pct = Number(values?.chatWidthPercent) || 70;
-  // % tính theo khung chứa chat (đã trừ sidebar), kẹp bởi giới hạn px.
-  const width = values?.chatWidthMode === "px" ? `${px}px` : `min(${pct}%, ${px}px)`;
+  const { chatOn, chatPercent, chatMaxRem } = useAppearance();
+  // % tính theo khung chứa chat (đã trừ sidebar), kẹp bởi giới hạn rem (theo cỡ chữ).
+  const width = `min(${chatPercent}%, ${chatMaxRem}rem)`;
 
   useEffect(() => {
-    if (!on) return;
+    if (!chatOn) return;
     const root = document.documentElement;
     root.setAttribute("data-hagi-chat-width", "");
     root.style.setProperty("--hagi-chat-width", width);
@@ -20,7 +17,7 @@ export function ChatWidth() {
       root.removeAttribute("data-hagi-chat-width");
       root.style.removeProperty("--hagi-chat-width");
     };
-  }, [on, width]);
+  }, [chatOn, width]);
 
   return null;
 }
