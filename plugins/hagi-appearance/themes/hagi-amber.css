@@ -94,6 +94,10 @@
   --pr-merged: #b48ae6;
   --file-accent: #f2b13c;
 
+  /* Thẻ, hộp thoại, menu nổi lên khỏi nền chính #0f0e0c (giống panel trong ảnh mẫu). */
+  --card: #1a1815;
+  --popover: #1a1815;
+
   /* Khai lại để pha theo canvas/ink của bản tối. */
   --sidebar: #171614;
   --border: color-mix(in oklch, var(--ink) 20%, var(--canvas));
@@ -102,4 +106,9 @@
   --input: color-mix(in oklch, var(--ink) 34%, var(--canvas));
   --surface-selected: color-mix(in oklch, #d4694a 38%, var(--canvas));
   --surface-selected-border: #d4694a;
+}
+
+/* Ô nhập tin nhắn (chỉ bản tối). Selector [data-composer-box] là nội bộ BB, có thể đổi khi BB cập nhật. */
+.dark [data-composer-box] {
+  background-color: #1a1815;
 }
