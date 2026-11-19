@@ -1,8 +1,7 @@
 import { useEffect } from "react";
-import { useSettings } from "@get-bb/plugin-sdk/app";
 
 const FIELD = 'textarea, [contenteditable="true"], [contenteditable=""], .ProseMirror';
-const HEX = /^#[0-9a-fA-F]{3,8}$/;
+const MARK = "data-hagi-composer-surface";
 
 // Tìm khung có viền bo góc bao quanh ô gõ tin nhắn (không biết tên class của BB nên dò từ ô gõ đi lên).
 function findSurface(): HTMLElement | null {
@@ -19,24 +18,19 @@ function findSurface(): HTMLElement | null {
   return fallback;
 }
 
-// Chạy khi công tắc bật; tắt hoặc gỡ plugin thì trả lại màu gốc.
+// Chỉ gắn nhãn `data-hagi-composer-surface` lên khung ô nhập; màu do theme (hagi-amber.css) đặt.
+// Không có theme dùng nhãn này thì không có gì thay đổi, nên không cần công tắc.
 export function ComposerSurface() {
-  const { values } = useSettings();
-  const raw = String(values?.composerBgColor ?? "");
-  const color = HEX.test(raw) ? raw : "#1a1815";
-  const on = values?.composerBgEnabled === true;
-
   useEffect(() => {
-    if (!on) return;
     let current: HTMLElement | null = null;
-    const release = () => current?.style.removeProperty("background-color");
+    const release = () => current?.removeAttribute(MARK);
     const apply = () => {
       const next = findSurface();
       if (next !== current) {
         release();
         current = next;
       }
-      current?.style.setProperty("background-color", color, "important");
+      current?.setAttribute(MARK, "");
     };
     let frame = 0;
     const schedule = () => {
@@ -51,7 +45,7 @@ export function ComposerSurface() {
       cancelAnimationFrame(frame);
       release();
     };
-  }, [on, color]);
+  }, []);
 
   return null;
 }

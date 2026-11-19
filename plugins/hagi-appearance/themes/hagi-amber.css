@@ -107,3 +107,8 @@
   --surface-selected: color-mix(in oklch, #d4694a 38%, var(--canvas));
   --surface-selected-border: #d4694a;
 }
+
+/* Ô nhập tin nhắn (bản tối). Nhãn data-hagi-composer-surface do plugin gắn lên khung quanh ô gõ (features/composer-surface.tsx). */
+.dark [data-hagi-composer-surface] {
+  background-color: #1a1815 !important;
+}
