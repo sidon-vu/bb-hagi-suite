@@ -1,0 +1,5 @@
+/* Ý tưởng và selector lấy từ "Chat Width" (werserk/bb-plugin-chat-width, MIT, commit c568d72). Xem PROVENANCE.md. */
+html[data-hagi-chat-width] [data-thread-window] .mx-auto.w-full:has([data-timeline-row-list="top-level"]),
+html[data-hagi-chat-width] [data-thread-window] .chat-prompt-box:has([data-app-composer-role="primary"]) {
+  max-width: var(--hagi-chat-width) !important;
+}

@@ -1,0 +1,47 @@
+{
+  "$schema": "https://getbb.app/schemas/plugins.schema.json",
+  "schemaVersion": 1,
+  "name": "hagi-suite",
+  "plugins": [
+    {
+      "name": "hagi-chat-reading",
+      "source": "./plugins/hagi-chat-reading"
+    },
+    {
+      "name": "hagi-rich-render",
+      "source": "./plugins/hagi-rich-render"
+    },
+    {
+      "name": "hagi-composer",
+      "source": "./plugins/hagi-composer"
+    },
+    {
+      "name": "hagi-thread-nav",
+      "source": "./plugins/hagi-thread-nav"
+    },
+    {
+      "name": "hagi-agent-insight",
+      "source": "./plugins/hagi-agent-insight"
+    },
+    {
+      "name": "hagi-code-review",
+      "source": "./plugins/hagi-code-review"
+    },
+    {
+      "name": "hagi-tasks-memory",
+      "source": "./plugins/hagi-tasks-memory"
+    },
+    {
+      "name": "hagi-appearance",
+      "source": "./plugins/hagi-appearance"
+    },
+    {
+      "name": "hagi-files",
+      "source": "./plugins/hagi-files"
+    },
+    {
+      "name": "hagi-ops",
+      "source": "./plugins/hagi-ops"
+    }
+  ]
+}
