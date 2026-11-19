@@ -6,13 +6,16 @@ import "./chat-width.css";
 export function ChatWidth() {
   const { values } = useSettings();
   const on = values?.chatWidthEnabled === true;
-  const width = Number(values?.chatWidth) || 1040;
+  const px = Number(values?.chatWidth) || 1040;
+  const pct = Number(values?.chatWidthPercent) || 70;
+  // % tính theo khung chứa chat (đã trừ sidebar), kẹp bởi giới hạn px.
+  const width = values?.chatWidthMode === "px" ? `${px}px` : `min(${pct}%, ${px}px)`;
 
   useEffect(() => {
     if (!on) return;
     const root = document.documentElement;
     root.setAttribute("data-hagi-chat-width", "");
-    root.style.setProperty("--hagi-chat-width", `${width}px`);
+    root.style.setProperty("--hagi-chat-width", width);
     return () => {
       root.removeAttribute("data-hagi-chat-width");
       root.style.removeProperty("--hagi-chat-width");
