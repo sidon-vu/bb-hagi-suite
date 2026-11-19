@@ -13,6 +13,7 @@ Trạng thái: `dự kiến` · `đang làm` · `xong` · `bỏ`.
 | Preset giao diện | `preset` (compact / comfortable / wide) | đã build, chờ chạy thử | tự viết | `features/presets.ts`; chỉ đặt tỷ lệ (%, rem), không px cố định. Ô số riêng: 0 = theo preset |
 | Độ rộng khung chat | `chatWidthEnabled`, `chatWidthPercent`, `chatWidthMaxRem` | % khung kẹp tối đa theo rem; bản px cũ đã bỏ | Chat Width | `features/chat-width.tsx`; selector nội bộ BB, dễ vỡ khi BB cập nhật |
 | Cỡ chữ co giãn | `fontScaleEnabled`, `fontScalePercent` | đã build, chờ chạy thử | tự viết (tham khảo UI Scale, Fonts) | `features/font-scale.tsx`; đổi `font-size` gốc theo `vw`, kẹp ±15%; ảnh hưởng cả UI nếu BB dùng rem |
+| Bảng màu (3 theme) | `bb.themes` trong package.json: Hagi Night / Sand / Mono | đã build, chờ chọn thử | tự viết (tông màu quen thuộc, không chép code) | `themes/*.css`; hiện ở Settings → Appearance, không có công tắc vì chọn theme mới là "bật" |
 | Bố cục chat (còn lại) | `layout*` | dự kiến | Auto-hide Panel | thay sidebar thì để ở hagi-thread-nav |
 | Ngôn ngữ tiếng Việt | `langVi` | dự kiến | 简体中文语言包 (MIT) | làm sau cùng, việc dịch rất lớn |
 

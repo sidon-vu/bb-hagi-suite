@@ -1,0 +1,25 @@
+/* Hagi Mono: đen xám tương phản cao, điểm nhấn xanh lá. Bảng màu tự đặt. */
+:root,
+.light {
+  --canvas: #fafafa;
+  --ink: #171717;
+  --primary: #1f7a3a;
+  --primary-foreground: #fafafa;
+  --muted-foreground: color-mix(in oklch, var(--ink) 70%, var(--canvas));
+  --subtle-foreground: color-mix(in oklch, var(--ink) 58%, var(--canvas));
+  --readback-foreground: color-mix(in oklch, var(--ink) 64%, var(--canvas));
+  --destructive: #c62828;
+  --destructive-text: #a31f1f;
+  --success: #1f7a3a;
+  --file-accent: #1f7a3a;
+}
+.dark {
+  --canvas: #101010;
+  --ink: #ededed;
+  --primary: #5ee08a;
+  --primary-foreground: #101010;
+  --destructive: #ff6b6b;
+  --destructive-text: #ff8f8f;
+  --success: #5ee08a;
+  --file-accent: #5ee08a;
+}
