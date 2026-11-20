@@ -10,6 +10,7 @@ Trạng thái: `dự kiến` · `đang làm` · `xong` · `bỏ`.
 | Tính năng | Khóa công tắc | Trạng thái | Lấy ý từ plugin | Ghi chú |
 |---|---|---|---|---|
 | Trang Bots (navPanel + cột trái riêng + dữ liệu giả + tạo/sửa giả) | `botsPanel` | đang làm | ý tưởng Bots Sidebar + bố cục Agent Traces | `app.slots.navPanel` + `experimental_sidebar`/`experimental_usePageTitle`/`experimental_useBadge`. Công tắc chỉ điều khiển nội dung trang — mục "Bots" trong điều hướng vẫn hiện (đăng ký tĩnh). Store trong bộ nhớ: `features/mock-store.ts` |
+| Bộ nhớ kiểu Hermes/OpenClaw (mock): SOUL + MEMORY + PLAYBOOK + USER.md dùng chung + episodes + guidance read-only | (trong `botsPanel`) | đang làm | Hermes Agent, OpenClaw | Tab Instructions của trang chi tiết bot hiển thị đủ bộ nhớ; USER.md sửa ở thẻ riêng trang tổng. Guidance là text tĩnh, read-only. Bản thật sẽ cần: bảng episodes + job "dreaming" gộp vào MEMORY + tool để bot tự ghi playbook |
 
 ## Plugin tham khảo
 

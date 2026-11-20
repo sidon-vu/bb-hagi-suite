@@ -1,7 +1,7 @@
 import { useEffect, useState } from "react";
 import { useBbNavigate, useSettings } from "@get-bb/plugin-sdk/app";
 import type { PluginNavPanelProps } from "@get-bb/plugin-sdk/app";
-import { addMockThread, openEditor, useBots, useEditorTarget, type MockBot } from "./mock-store";
+import { addMockThread, openEditor, useBots, useEditorTarget, useUserMd, saveUserMd, MOCK_GUIDANCE, type MockBot } from "./mock-store";
 import { BotAvatar, StatusDot } from "./bot-avatar";
 import { parseSubPath } from "./routes";
 import { BotEditor } from "./bot-editor";
@@ -65,6 +65,7 @@ function ThreadRows({ bot, activeThreadId }: { bot: MockBot; activeThreadId: str
 
 function BotDetail({ bot, threadId }: { bot: MockBot; threadId: string | null }) {
   const [tab, setTab] = useState<"threads" | "context" | "projects">("threads");
+  const userMd = useUserMd();
   useEffect(() => {
     if (threadId) setTab("threads");
   }, [threadId]);
@@ -115,6 +116,31 @@ function BotDetail({ bot, threadId }: { bot: MockBot; threadId: string | null })
             <div style={{ fontSize: 11, fontWeight: 600, color: "var(--muted-foreground)", marginBottom: 4 }}>MEMORY.md · tối đa 3000 ký tự</div>
             <pre className="hagi-bots-pre" style={{ margin: 0 }}>{bot.memory || "(trống)"}</pre>
           </div>
+          <div>
+            <div style={{ fontSize: 11, fontWeight: 600, color: "var(--muted-foreground)", marginBottom: 4 }}>PLAYBOOK.md · kinh nghiệm bot tự tích luỹ</div>
+            <pre className="hagi-bots-pre" style={{ margin: 0 }}>{bot.playbook || "(trống)"}</pre>
+          </div>
+          <div>
+            <div style={{ fontSize: 11, fontWeight: 600, color: "var(--muted-foreground)", marginBottom: 4 }}>USER.md · dùng chung cho mọi bot</div>
+            <pre className="hagi-bots-pre" style={{ margin: 0 }}>{userMd || "(trống)"}</pre>
+          </div>
+          <div>
+            <div style={{ fontSize: 11, fontWeight: 600, color: "var(--muted-foreground)", marginBottom: 4 }}>Ghi chép gần đây (episodes)</div>
+            {bot.episodes.length ? (
+              <ul style={{ margin: 0, paddingLeft: 18, fontSize: 12, color: "var(--muted-foreground)" }}>
+                {bot.episodes.map((episode, index) => (
+                  <li key={index}>{episode}</li>
+                ))}
+              </ul>
+            ) : (
+              <p style={{ margin: 0, fontSize: 12, color: "var(--muted-foreground)" }}>Chưa có — bản thật ghi 1-2 dòng sau mỗi thread xong việc.</p>
+            )}
+            <p className="hagi-bots-note" style={{ marginTop: 6 }}>Job nền "dreaming" sẽ gom episodes → cô đọng vào MEMORY.md (bản thật).</p>
+          </div>
+          <details>
+            <summary style={{ fontSize: 11, fontWeight: 600, color: "var(--muted-foreground)", cursor: "pointer" }}>Guidance cố định (read-only)</summary>
+            <pre className="hagi-bots-pre" style={{ margin: "6px 0 0" }}>{MOCK_GUIDANCE}</pre>
+          </details>
         </div>
       ) : null}
       {activeTab === "projects" ? (
@@ -129,6 +155,41 @@ function BotDetail({ bot, threadId }: { bot: MockBot; threadId: string | null })
         </div>
       ) : null}
     </>
+  );
+}
+
+// Thẻ USER.md dùng chung cho mọi bot (hồ sơ người dùng — ý tưởng Hermes/OpenClaw).
+function UserMdCard() {
+  const userMd = useUserMd();
+  const [draft, setDraft] = useState(userMd);
+  const [dirty, setDirty] = useState(false);
+  return (
+    <div style={{ display: "flex", flexDirection: "column", gap: 6 }}>
+      <div style={{ fontSize: 11, fontWeight: 600, color: "var(--muted-foreground)" }}>USER.md · hồ sơ của bạn, dùng chung cho mọi bot</div>
+      <textarea
+        rows={3}
+        value={draft}
+        onChange={(event) => {
+          setDraft(event.target.value);
+          setDirty(true);
+        }}
+        style={{ font: "inherit", fontFamily: "var(--font-mono)", fontSize: 11, padding: "7px 9px", border: "1px solid var(--input, var(--border))", borderRadius: 6, background: "var(--background)", color: "var(--foreground)", resize: "vertical" }}
+      />
+      {dirty ? (
+        <div>
+          <button
+            type="button"
+            className="hagi-bots-btn hagi-bots-btn--primary"
+            onClick={() => {
+              saveUserMd(draft);
+              setDirty(false);
+            }}
+          >
+            Lưu USER.md
+          </button>
+        </div>
+      ) : null}
+    </div>
   );
 }
 
@@ -166,6 +227,7 @@ export function BotsPage({ subPath }: PluginNavPanelProps) {
               ＋ Bot mới
             </button>
           </div>
+          <UserMdCard />
         </>
       ) : bot ? (
         <BotDetail bot={bot} threadId={current.threadId} />

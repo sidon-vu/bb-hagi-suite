@@ -17,6 +17,8 @@ export interface MockBot {
   shape: "round" | "square" | "hex";
   soul: string;
   memory: string;
+  playbook: string;
+  episodes: string[];
   projects: { id: string; name: string; role: "owner" | "member" }[];
   threads: MockThread[];
 }
@@ -28,7 +30,13 @@ export interface BotDraft {
   shape: MockBot["shape"];
   soul: string;
   memory: string;
+  playbook: string;
 }
+
+// Guidance cố định: trong bản thật là text tĩnh trong code plugin, inject khi
+// tools bot được chọn — không phải dữ liệu bot, không sửa được.
+export const MOCK_GUIDANCE =
+  "Guidance cố định (do plugin quản lý, không sửa được). Bản thật gồm: cách nhắn bot khác qua `bb bots`, quy ước tool bot_read_state/bot_update_state, luật ownership project, và quy tắc MEMORY tối đa 3000 ký tự kèm cách xử lý khi tràn.";
 
 const seed: MockBot[] = [
   {
@@ -39,6 +47,11 @@ const seed: MockBot[] = [
     shape: "round",
     soul: "# SOUL\nBot viết tài liệu: giọng rõ, ngắn, có cấu trúc.",
     memory: "- README giữ tối đa 40 dòng\n- Ưu tiên bảng khi so sánh",
+    playbook: "- Tóm tắt thay đổi theo nhóm file, không theo thời gian\n- Luôn link tới file dòng khi nêu vấn đề",
+    episodes: [
+      "20/11 — Viết lại mục Getting Started: gộp 3 bước cài thành 1 lệnh",
+      "19/11 — Review lỗi chính tả: sửa 14 chỗ, không đổi nội dung",
+    ],
     projects: [
       { id: "proj_docs", name: "docs-site", role: "owner" },
       { id: "proj_bb", name: "bb-workbench", role: "member" },
@@ -63,6 +76,8 @@ const seed: MockBot[] = [
     shape: "square",
     soul: "# SOUL\nBot review: đọc kỹ diff, nêu rủi ro trước khi khen.",
     memory: "- Kiểm tra xử lý lỗi ở trust boundary\n- Luôn hỏi lại nếu yêu cầu mơ hồ",
+    playbook: "- Nêu rủi ro trước, gợi ý sau\n- Comment lỗi nhỏ gom một bình luận",
+    episodes: ["20/11 — Review PR #42: phát hiện race condition ở cache"],
     projects: [{ id: "proj_bb", name: "bb-workbench", role: "member" }],
     threads: [
       {
@@ -84,6 +99,8 @@ const seed: MockBot[] = [
     shape: "hex",
     soul: "# SOUL\nBot vận hành: theo dõi tiến độ, nhắc việc còn treo.",
     memory: "",
+    playbook: "",
+    episodes: [],
     projects: [],
     threads: [
       { id: "t_bench_1", title: "Tổng hợp tình trạng tuần", status: "idle" },
@@ -94,6 +111,8 @@ const seed: MockBot[] = [
 ];
 
 let bots: MockBot[] = seed;
+// USER.md dùng chung cho mọi bot (hồ sơ người dùng — cùng một người dùng BB).
+let userMd = "- Gọi tôi là Hagi\n- Trả lời tiếng Việt, câu ngắn";
 const listeners = new Set<() => void>();
 
 function emit() {
@@ -107,6 +126,15 @@ function subscribe(listener: () => void) {
 
 export function useBots(): MockBot[] {
   return useSyncExternalStore(subscribe, () => bots);
+}
+
+export function useUserMd(): string {
+  return useSyncExternalStore(subscribe, () => userMd);
+}
+
+export function saveUserMd(next: string) {
+  userMd = next;
+  emit();
 }
 
 // Trạng thái dialog sửa/tạo: dùng chung giữa sidebar và trang (2 slot mount riêng).
@@ -132,7 +160,7 @@ export function saveBot(draft: BotDraft, botId?: string) {
     bots = bots.map((bot) => (bot.id === botId ? { ...bot, ...draft } : bot));
   } else {
     const id = `hb_${Date.now().toString(36)}`;
-    bots = [...bots, { id, threads: [], projects: [], ...draft }];
+    bots = [...bots, { id, threads: [], projects: [], episodes: [], ...draft }];
   }
   emit();
   return true;

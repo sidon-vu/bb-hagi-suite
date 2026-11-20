@@ -14,8 +14,8 @@ export function BotEditor({ target }: { target: EditorTarget }) {
   const editing = target.kind === "edit" ? bots.find((bot) => bot.id === target.botId) : undefined;
   const [draft, setDraft] = useState<BotDraft>(() =>
     editing
-      ? { name: editing.name, role: editing.role, color: editing.color, shape: editing.shape, soul: editing.soul, memory: editing.memory }
-      : { name: "", role: "Assistant", color: COLORS[0]!, shape: "round", soul: "", memory: "" },
+      ? { name: editing.name, role: editing.role, color: editing.color, shape: editing.shape, soul: editing.soul, memory: editing.memory, playbook: editing.playbook }
+      : { name: "", role: "Assistant", color: COLORS[0]!, shape: "round", soul: "", memory: "", playbook: "" },
   );
   const [error, setError] = useState<string | null>(null);
   if (target.kind === "edit" && !editing) return null;
@@ -86,6 +86,10 @@ export function BotEditor({ target }: { target: EditorTarget }) {
         <label>
           MEMORY.md · {draft.memory.length}/3000
           <textarea rows={3} value={draft.memory} placeholder="- Một dòng = một sự thật bot cần nhớ" onChange={(event) => set({ memory: event.target.value })} />
+        </label>
+        <label>
+          PLAYBOOK.md · kinh nghiệm/quy trình bot tự tích luỹ
+          <textarea rows={3} value={draft.playbook} placeholder="- Quy trình và bài học tái dùng được" onChange={(event) => set({ playbook: event.target.value })} />
         </label>
         {error ? <p role="alert" style={{ margin: 0, color: "var(--destructive)", fontSize: 12 }}>{error}</p> : null}
         <div className="hagi-bots-editor__foot">
