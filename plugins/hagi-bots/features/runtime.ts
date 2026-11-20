@@ -20,7 +20,8 @@ const GUIDANCE = [
 ].join("\n\n");
 
 const readSchema = z.object({ target: z.enum(["identity", "memory", "playbook", "user"]) }).strict();
-const updateSchema = z.discriminatedUnion("target", [
+// z.union, không phải discriminatedUnion: 2 nhánh memory cùng literal "memory" làm Zod ném "Duplicate discriminator".
+export const updateSchema = z.union([
   z.object({ target: z.literal("memory"), action: z.literal("append"), fact: z.string().trim().min(1).max(300).regex(/^[^\n]+$/, "một dòng") }).strict(),
   z.object({ target: z.literal("memory"), action: z.literal("overwrite"), content: z.string().max(MEMORY_LIMIT), expectedSha256: z.string() }).strict(),
   z.object({ target: z.literal("playbook"), action: z.literal("overwrite"), content: z.string().max(4096), expectedSha256: z.string() }).strict(),
