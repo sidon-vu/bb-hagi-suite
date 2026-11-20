@@ -1,5 +1,5 @@
 import type { PluginNavPanelProps } from "@get-bb/plugin-sdk/app";
-import { useBots } from "./mock-store";
+import { countWaitingThreads, useBots } from "./mock-store";
 import { parseSubPath } from "./routes";
 
 // Tiêu đề cửa sổ/thanh tiêu đề của trang Bots theo subPath.
@@ -11,9 +11,10 @@ export function useBotsPageTitle({ subPath }: PluginNavPanelProps): { title: str
   return bot ? { title: `Bots · ${bot.name}` } : null;
 }
 
-// Badge trên mục điều hướng: số bot (dữ liệu giả).
-export function useBotsBadge(): { count: number; label: string } | null {
+// Badge trên mục điều hướng: số thread đang CHỜ input — con số đáng hành động.
+export function useBotsBadge(): { count: number; label: string; tone: "warning" } | null {
   const bots = useBots();
-  if (!bots.length) return null;
-  return { count: bots.length, label: `${bots.length} bot` };
+  const waiting = countWaitingThreads(bots);
+  if (!waiting) return null;
+  return { count: waiting, tone: "warning", label: `${waiting} thread chờ input` };
 }

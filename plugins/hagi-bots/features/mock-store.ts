@@ -19,8 +19,36 @@ export interface MockBot {
   memory: string;
   playbook: string;
   episodes: string[];
+  lastActivity: string;
   projects: { id: string; name: string; role: "owner" | "member" }[];
   threads: MockThread[];
+}
+
+// Trạng thái bot suy ra từ thread: chờ input > đang làm > nghỉ (ưu tiên như bản gốc).
+export type BotStatus = "working" | "waiting" | "idle";
+export const STATUS_LABEL: Record<BotStatus, string> = {
+  working: "Đang làm",
+  waiting: "Chờ input",
+  idle: "Nghỉ",
+};
+
+export function botStatus(bot: MockBot): BotStatus {
+  const statuses = bot.threads.flatMap((thread) => [thread.status, ...(thread.children?.map((child) => child.status) ?? [])]);
+  if (statuses.includes("waiting")) return "waiting";
+  if (statuses.includes("working")) return "working";
+  return "idle";
+}
+
+export function countWaitingThreads(bots: MockBot[]): number {
+  return bots.reduce(
+    (total, bot) =>
+      total +
+      bot.threads.reduce(
+        (n, thread) => n + (thread.status === "waiting" ? 1 : 0) + (thread.children?.filter((child) => child.status === "waiting").length ?? 0),
+        0,
+      ),
+    0,
+  );
 }
 
 export interface BotDraft {
@@ -52,6 +80,7 @@ const seed: MockBot[] = [
       "20/11 — Viết lại mục Getting Started: gộp 3 bước cài thành 1 lệnh",
       "19/11 — Review lỗi chính tả: sửa 14 chỗ, không đổi nội dung",
     ],
+    lastActivity: "Đang chạy 12 phút",
     projects: [
       { id: "proj_docs", name: "docs-site", role: "owner" },
       { id: "proj_bb", name: "bb-workbench", role: "member" },
@@ -78,6 +107,7 @@ const seed: MockBot[] = [
     memory: "- Kiểm tra xử lý lỗi ở trust boundary\n- Luôn hỏi lại nếu yêu cầu mơ hồ",
     playbook: "- Nêu rủi ro trước, gợi ý sau\n- Comment lỗi nhỏ gom một bình luận",
     episodes: ["20/11 — Review PR #42: phát hiện race condition ở cache"],
+    lastActivity: "Chờ input 2 giờ",
     projects: [{ id: "proj_bb", name: "bb-workbench", role: "member" }],
     threads: [
       {
@@ -101,6 +131,7 @@ const seed: MockBot[] = [
     memory: "",
     playbook: "",
     episodes: [],
+    lastActivity: "Nghỉ 3 ngày",
     projects: [],
     threads: [
       { id: "t_bench_1", title: "Tổng hợp tình trạng tuần", status: "idle" },
@@ -160,7 +191,7 @@ export function saveBot(draft: BotDraft, botId?: string) {
     bots = bots.map((bot) => (bot.id === botId ? { ...bot, ...draft } : bot));
   } else {
     const id = `hb_${Date.now().toString(36)}`;
-    bots = [...bots, { id, threads: [], projects: [], episodes: [], ...draft }];
+    bots = [...bots, { id, threads: [], projects: [], episodes: [], lastActivity: "Vừa tạo", ...draft }];
   }
   emit();
   return true;

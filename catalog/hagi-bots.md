@@ -16,6 +16,13 @@ Trạng thái: `dự kiến` · `đang làm` · `xong` · `bỏ`.
 
 Cập nhật 2026-11-20.
 
+### Phong cách & theo dõi
+
+- Phong cách "đội bot roster": card nhân sự, avatar SVG có mặt đổi theo trạng thái (đang làm/chờ input/nghỉ), chip màu, card nổi khi hover. Avatar waiting có vòng vàng.
+- Trạng thái bot suy ra từ thread: chờ > đang làm > nghỉ (giống luật bản gốc). Mỗi bot có `lastActivity`.
+- Badge điều hướng = số thread đang CHỜ input (tone warning), không phải đếm bot.
+- Trang tổng có "Hoạt động gần đây" gom episodes mọi bot; tab Instructions có thanh độ đầy MEMORY.md /3000 (vàng khi >80%).
+
 ### Hướng UI
 
 - Trang riêng kiểu Traces: bên ngoài chỉ 1 mục "Bots" trong điều hướng (`app.slots.navPanel`), bấm vào mở trang có `experimental_sidebar` cột trái riêng. KHÔNG thay sidebar thread gốc của BB.

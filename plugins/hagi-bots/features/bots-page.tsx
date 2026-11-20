@@ -1,8 +1,8 @@
 import { useEffect, useState } from "react";
 import { useBbNavigate, useSettings } from "@get-bb/plugin-sdk/app";
 import type { PluginNavPanelProps } from "@get-bb/plugin-sdk/app";
-import { addMockThread, openEditor, useBots, useEditorTarget, useUserMd, saveUserMd, MOCK_GUIDANCE, type MockBot } from "./mock-store";
-import { BotAvatar, StatusDot } from "./bot-avatar";
+import { addMockThread, botStatus, openEditor, useBots, useEditorTarget, useUserMd, saveUserMd, MOCK_GUIDANCE, type MockBot } from "./mock-store";
+import { BotAvatar, StatusChip, StatusDot } from "./bot-avatar";
 import { parseSubPath } from "./routes";
 import { BotEditor } from "./bot-editor";
 
@@ -14,15 +14,51 @@ function BotCard({ bot }: { bot: MockBot }) {
       className="hagi-bot-card"
       onClick={() => navigate.toPluginPanel("bots", { subPath: `bots/${bot.id}` })}
     >
-      <span style={{ display: "flex", alignItems: "center", gap: 8 }}>
-        <BotAvatar bot={bot} size={32} />
-        <span style={{ fontWeight: 600 }}>{bot.name}</span>
+      <span className="hagi-bot-card__head">
+        <BotAvatar bot={bot} size={40} />
+        <span style={{ minWidth: 0 }}>
+          <span className="hagi-bot-card__name">{bot.name}</span>
+          <span className="hagi-bot-card__role">{bot.role}</span>
+        </span>
       </span>
-      <span style={{ color: "var(--muted-foreground)", fontSize: 11 }}>{bot.role}</span>
-      <span style={{ color: "var(--muted-foreground)", fontSize: 11 }}>
+      <StatusChip status={botStatus(bot)} detail={bot.lastActivity} />
+      <span className="hagi-bot-card__counts">
         {bot.threads.length} hội thoại · {bot.projects.length} project
       </span>
     </button>
+  );
+}
+
+// Feed gom episodes của mọi bot, mới nhất trên đầu (mốc "DD/MM" đầu mỗi dòng).
+function ActivityFeed({ bots }: { bots: MockBot[] }) {
+  const navigate = useBbNavigate();
+  const day = (text: string) => {
+    const match = text.match(/^(\d{2})\/(\d{2})/);
+    return match ? Number(match[2]) * 100 + Number(match[1]) : 0;
+  };
+  const items = bots
+    .flatMap((bot) => bot.episodes.map((text) => ({ bot, text })))
+    .sort((a, b) => day(b.text) - day(a.text));
+  if (!items.length) return null;
+  return (
+    <div>
+      <div style={{ fontSize: 11, fontWeight: 600, color: "var(--muted-foreground)", marginBottom: 4 }}>Hoạt động gần đây</div>
+      <div className="hagi-feed">
+        {items.map(({ bot, text }, index) => (
+          <button
+            key={index}
+            type="button"
+            className="hagi-feed__item"
+            style={{ border: "none", background: "none", cursor: "pointer", font: "inherit", textAlign: "left", width: "100%" }}
+            onClick={() => navigate.toPluginPanel("bots", { subPath: `bots/${bot.id}` })}
+          >
+            <BotAvatar bot={bot} size={18} />
+            <span className="hagi-feed__bot">{bot.name}</span>
+            <span className="hagi-feed__text">{text}</span>
+          </button>
+        ))}
+      </div>
+    </div>
   );
 }
 
@@ -79,6 +115,7 @@ function BotDetail({ bot, threadId }: { bot: MockBot; threadId: string | null })
           <p>
             {bot.role} · {bot.threads.length} hội thoại
           </p>
+          <StatusChip status={botStatus(bot)} detail={bot.lastActivity} />
         </div>
         <button
           type="button"
@@ -113,8 +150,11 @@ function BotDetail({ bot, threadId }: { bot: MockBot; threadId: string | null })
             <pre className="hagi-bots-pre" style={{ margin: 0 }}>{bot.soul || "(trống)"}</pre>
           </div>
           <div>
-            <div style={{ fontSize: 11, fontWeight: 600, color: "var(--muted-foreground)", marginBottom: 4 }}>MEMORY.md · tối đa 3000 ký tự</div>
+            <div style={{ fontSize: 11, fontWeight: 600, color: "var(--muted-foreground)", marginBottom: 4 }}>MEMORY.md · {bot.memory.length}/3000 ký tự</div>
             <pre className="hagi-bots-pre" style={{ margin: 0 }}>{bot.memory || "(trống)"}</pre>
+            <div className="hagi-memory-bar" role="meter" aria-label="Độ đầy MEMORY" aria-valuenow={bot.memory.length} aria-valuemax={3000}>
+              <span style={{ width: `${Math.min(100, (bot.memory.length / 3000) * 100)}%` }} data-warn={bot.memory.length > 2400 || undefined} />
+            </div>
           </div>
           <div>
             <div style={{ fontSize: 11, fontWeight: 600, color: "var(--muted-foreground)", marginBottom: 4 }}>PLAYBOOK.md · kinh nghiệm bot tự tích luỹ</div>
@@ -228,6 +268,7 @@ export function BotsPage({ subPath }: PluginNavPanelProps) {
             </button>
           </div>
           <UserMdCard />
+          <ActivityFeed bots={bots} />
         </>
       ) : bot ? (
         <BotDetail bot={bot} threadId={current.threadId} />
