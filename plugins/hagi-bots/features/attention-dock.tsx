@@ -22,6 +22,14 @@ function useOsNotify(enabled: boolean, items: WaitingItem[], navigate: ReturnTyp
   const notified = useRef(new Set<string>());
   const ids = items.map((item) => item.thread.id).join(",");
 
+  const fire = (bot: MockBot, thread: MockThread) => {
+    const toast = new Notification(`${bot.name} cần duyệt`, { body: thread.title, tag: `hagi-bot-${thread.id}` });
+    toast.onclick = () => {
+      window.focus();
+      navigate.toPluginPanel("bots", { subPath: `bots/${bot.id}/threads/${thread.id}` });
+    };
+  };
+
   useEffect(() => {
     if (!enabled || typeof Notification === "undefined") return;
     for (const id of notified.current) {
@@ -30,17 +38,19 @@ function useOsNotify(enabled: boolean, items: WaitingItem[], navigate: ReturnTyp
     const fresh = items.filter((item) => !notified.current.has(item.thread.id));
     if (fresh.length === 0) return;
     if (Notification.permission === "default") {
-      void Notification.requestPermission();
+      void Notification.requestPermission().then((permission) => {
+        if (permission !== "granted") return;
+        for (const { bot, thread } of fresh) {
+          notified.current.add(thread.id);
+          fire(bot, thread);
+        }
+      });
       return;
     }
     if (Notification.permission !== "granted") return;
     for (const { bot, thread } of fresh) {
       notified.current.add(thread.id);
-      const toast = new Notification(`${bot.name} cần duyệt`, { body: thread.title, tag: `hagi-bot-${thread.id}` });
-      toast.onclick = () => {
-        window.focus();
-        navigate.toPluginPanel("bots", { subPath: `bots/${bot.id}/threads/${thread.id}` });
-      };
+      fire(bot, thread);
     }
     // items phụ thuộc ids; navigate/toast.onclick ổn định đủ cho mock.
     // eslint-disable-next-line react-hooks/exhaustive-deps
