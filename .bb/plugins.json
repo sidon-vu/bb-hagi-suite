@@ -42,6 +42,10 @@
     {
       "name": "hagi-ops",
       "source": "./plugins/hagi-ops"
+    },
+    {
+      "name": "hagi-bots",
+      "source": "./plugins/hagi-bots"
     }
   ]
 }
