@@ -40,6 +40,15 @@ Inject vào agent = guidance cố định + phần động. Trong bots-sidebar g
 - Episodes: ghi 1-2 dòng sau mỗi thread xong việc (tương đương `memory/YYYY-MM-DD.md` của OpenClaw).
 - Dreaming-lite: job nền định kỳ (reuse cron pattern) gom episodes mới + MEMORY → cô đọng ghi lại MEMORY qua CAS; giữ revision để rollback; loại nội dung nguồn không tin cậy (như OpenClaw dreaming).
 
+### Migrate từ bots-sidebar
+
+- Chuyển KHÔNG mất dữ liệu: `bb plugin disable` giữ nguyên SQLite + exports của plugin cũ trên đĩa; chỉ `remove` mới xoá. Quay lại được bất cứ lúc nào.
+- Dữ liệu nguồn (trên host server): `plugins/bots-sidebar/data.db` (authority) + `plugins/bots-sidebar/data/state/<botId>/` (exports: `bot.json` v3 + `SOUL.md`/`AGENTS.md`/`MEMORY.md`/`settings.json`).
+- Cách: nút "Nhập từ Bots Sidebar" do NGƯỜI DÙNG bấm (không tự đọc state riêng plugin khác). Đọc read-only → preview (N bot, M thread binding) → ghi. Giữ nguyên bot id để liền mạch.
+- Thứ tự vận hành: import → kiểm tra → disable bots-sidebar → dùng hagi-bots. Chỉ đọc nguồn nên rollback an toàn.
+- Importer validate TỪNG bot, báo lỗi không crash — plugin cũ đang có hàng `soul >4096` làm hỏng `bb.agents.configure`.
+- Không migrate: `bot_starts` (token tạm), KV legacy (đã migrate xong), trạng thái runtime.
+
 ### Khi nối backend thật (cần làm)
 
 - Bảng `bot_episodes` trong plugin SQLite (SQLite đã có sẵn).
