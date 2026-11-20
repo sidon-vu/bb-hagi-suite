@@ -95,7 +95,7 @@ function BotDetail({ bot, threadId }: { bot: MockBot; threadId: string | null })
         {(
           [
             ["threads", `Hội thoại · ${bot.threads.length}`],
-            ["context", "Context"],
+            ["context", "Instructions"],
             ["projects", `Projects · ${bot.projects.length}`],
           ] as const
         ).map(([id, label]) => (
