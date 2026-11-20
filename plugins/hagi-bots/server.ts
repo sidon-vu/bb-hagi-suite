@@ -18,5 +18,11 @@ export default async function plugin(bb: BbPluginApi) {
       description: "Thẻ nổi góc màn hình khi có bot chờ duyệt — avatar + tên bot + việc đang chờ; bấm để tới chỗ duyệt. Cần bật cùng Trang Bots.",
       default: false,
     },
+    osNotify: {
+      type: "boolean",
+      label: "Thông báo hệ điều hành",
+      description: "Bắn toast hệ điều hành khi có bot chờ duyệt — hiện cả khi cửa sổ BB thu nhỏ (tab phải còn sống); bấm toast để quay lại BB tới chỗ duyệt. Cần bật cùng Trang Bots.",
+      default: false,
+    },
   });
 }

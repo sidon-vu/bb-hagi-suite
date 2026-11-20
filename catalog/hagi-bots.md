@@ -24,6 +24,7 @@ Cập nhật 2026-11-20.
 - Trang tổng: dải tổng quan (bot/hội thoại/đang làm/chờ) + "Hoạt động gần đây" gom episodes mọi bot; tab Instructions có thanh độ đầy MEMORY.md /3000 (vàng khi >80%).
 - Chuyển động: `motion` (deps) cho card/feed/dialog/tab entrance; CSS keyframes cho avatar sống — chớp mắt, gật khi làm, nảy khi chờ, thở khi nghỉ; tôn trọng prefers-reduced-motion. Avatar "sống" nâng cao thì cân nhắc Rive (cần asset .riv riêng).
 - Thẻ báo chờ duyệt (`attention-dock` + `experimental_appOverlay`, công tắc `attentionDock`): thẻ nổi góc phải-dưới toàn app — avatar + tên bot + thread đang chờ; mock bấm mở trang chi tiết bot, backend thật sẽ `toThread(threadId)` tới chỗ duyệt. Cần `botsPanel` bật.
+- Thông báo hệ điều hành (công tắc `osNotify`): Web Notification API bắn toast OS khi có thread chờ — hiện cả khi cửa sổ BB thu nhỏ, miễn tab/cửa sổ còn sống (đóng hẳn thì không, lúc đó cần push/companion ngoài). onclick → focus BB + tới chỗ duyệt. Xin quyền lần đầu; dedupe theo thread id, báo lại nếu thread hết chờ rồi chờ lại. BB cũng có notification native (`notifications.open`, `skipFocusedThreadNotifications`) — kiểm tra trước khi trùng lặp.
 
 ### Hướng UI
 

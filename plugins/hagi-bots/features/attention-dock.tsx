@@ -1,13 +1,50 @@
+import { useEffect, useMemo, useRef } from "react";
 import { useBbNavigate, useSettings } from "@get-bb/plugin-sdk/app";
 import { AnimatePresence, motion } from "motion/react";
 import { BotAvatar } from "./bot-avatar";
 import { botStatus, useBots, type MockBot, type MockThread } from "./mock-store";
+
+interface WaitingItem {
+  bot: MockBot;
+  thread: MockThread;
+}
 
 function waitingThreads(bot: MockBot): MockThread[] {
   return bot.threads.flatMap((thread) => [
     ...(thread.status === "waiting" ? [thread] : []),
     ...(thread.children?.filter((child) => child.status === "waiting") ?? []),
   ]);
+}
+
+// OS toast qua Web Notification: hiện cả khi cửa sổ BB thu nhỏ (tab còn sống).
+// Mock: onclick mở trang bot; backend thật sẽ navigate.toThread(threadId).
+function useOsNotify(enabled: boolean, items: WaitingItem[], navigate: ReturnType<typeof useBbNavigate>) {
+  const notified = useRef(new Set<string>());
+  const ids = items.map((item) => item.thread.id).join(",");
+
+  useEffect(() => {
+    if (!enabled || typeof Notification === "undefined") return;
+    for (const id of notified.current) {
+      if (!ids.split(",").includes(id)) notified.current.delete(id);
+    }
+    const fresh = items.filter((item) => !notified.current.has(item.thread.id));
+    if (fresh.length === 0) return;
+    if (Notification.permission === "default") {
+      void Notification.requestPermission();
+      return;
+    }
+    if (Notification.permission !== "granted") return;
+    for (const { bot, thread } of fresh) {
+      notified.current.add(thread.id);
+      const toast = new Notification(`${bot.name} cần duyệt`, { body: thread.title, tag: `hagi-bot-${thread.id}` });
+      toast.onclick = () => {
+        window.focus();
+        navigate.toPluginPanel("bots", { subPath: `bots/${bot.id}/threads/${thread.id}` });
+      };
+    }
+    // items phụ thuộc ids; navigate/toast.onclick ổn định đủ cho mock.
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [enabled, ids]);
 }
 
 // Thẻ nổi toàn app báo bot đang chờ duyệt — ý tưởng đã chốt trong catalog.
@@ -17,10 +54,14 @@ export function AttentionDock() {
   const navigate = useBbNavigate();
   const bots = useBots();
 
-  if (isLoading || values?.botsPanel !== true || values?.attentionDock !== true) return null;
+  const enabled = !isLoading && values?.botsPanel === true;
+  const items = useMemo<WaitingItem[]>(
+    () => (enabled ? bots.flatMap((bot) => waitingThreads(bot).map((thread) => ({ bot, thread }))) : []),
+    [enabled, bots],
+  );
+  useOsNotify(enabled && values?.osNotify === true, items, navigate);
 
-  const items = bots.flatMap((bot) => waitingThreads(bot).map((thread) => ({ bot, thread })));
-  if (items.length === 0) return null;
+  if (!enabled || values?.attentionDock !== true || items.length === 0) return null;
 
   return (
     <div className="hagi-attention">
