@@ -52,7 +52,7 @@ export default async function plugin(bb: BbPluginApi) {
   let runtimeOn = false;
   void settings.get().then((value) => { runtimeOn = value.botsRuntime === true && value.botsBackend === true; });
   settings.onChange((next) => { runtimeOn = next.botsRuntime === true && next.botsBackend === true; });
-  registerRuntime(bb, store, () => runtimeOn, publish);
+  const runtime = registerRuntime(bb, store, () => runtimeOn, publish);
   registerMention(bb, store, () => runtimeOn);
   registerCli(bb, store, () => runtimeOn);
   const backendOn = async () => {
@@ -109,6 +109,15 @@ export default async function plugin(bb: BbPluginApi) {
       await backendOn();
       store.unbind(threadId);
       publish();
+      return { ok: true as const };
+    },
+    hb_compose_expect: async ({ botId, projectId }) => {
+      await backendOn();
+      if (!runtimeOn) throw new Error("Cần bật Runtime bots để tạo hội thoại thật");
+      store.require(botId);
+      const linked = store.legacyExtra<{ linkedProjectIds?: string[] }>(botId)?.linkedProjectIds ?? [];
+      if (!linked.includes(projectId)) throw new Error("Project này không thuộc bot");
+      runtime.expectNewThread(botId, projectId);
       return { ok: true as const };
     },
     hb_conversation_create: async ({ botId, message, projectId, providerId, model }) => {

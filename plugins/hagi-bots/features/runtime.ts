@@ -122,9 +122,22 @@ export function registerRuntime(bb: BbPluginApi, store: HbotStore, isOn: () => b
   });
 
   // Chỉ kế thừa: thread con/fork của thread đã thuộc bot → gán cùng bot. Không claim theo project.
+  // Ngoại lệ DUY NHẤT cho "không claim theo project": người dùng vừa bấm « Hội thoại mới » trong trang Bots
+  // (mở New thread gốc của BB) → thread top-level đầu tiên của project đó trong 10 phút được gắn bot, một lần.
+  // shortcut: chỉ 1 chờ mỗi project, nằm trong bộ nhớ (mất khi plugin khởi động lại), không phân biệt thread tay/thread plugin.
+  const WAIT_MS = 10 * 60 * 1000;
+  const pending = new Map<string, { botId: string; at: number }>();
   bb.events.on("thread.created", async ({ thread }) => {
     if (!isOn() || store.owner(thread.id)) return;
     const parentBot = (thread.parentThreadId && store.owner(thread.parentThreadId)) || (thread.sourceThreadId && store.owner(thread.sourceThreadId)) || null;
-    if (parentBot && store.get(parentBot)) { store.bind(thread.id, parentBot); publish(); }
+    if (parentBot && store.get(parentBot)) { store.bind(thread.id, parentBot); publish(); return; }
+    if (thread.parentThreadId || thread.sourceThreadId) return;
+    const wait = pending.get(thread.projectId);
+    if (!wait) return;
+    pending.delete(thread.projectId);
+    if (Date.now() - wait.at < WAIT_MS && store.get(wait.botId)) { store.bind(thread.id, wait.botId); publish(); }
   });
+  return {
+    expectNewThread(botId: string, projectId: string) { pending.set(projectId, { botId, at: Date.now() }); },
+  };
 }

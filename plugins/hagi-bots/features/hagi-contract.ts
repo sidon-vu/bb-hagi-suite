@@ -81,6 +81,7 @@ export const rpcContract = defineRpcContract({
   hb_bot_delete: { input: z.object({ botId: id }).strict(), output: ok },
   hb_thread_bind: { input: z.object({ threadId: id, botId: id }).strict(), output: ok },
   hb_thread_unbind: { input: z.object({ threadId: id }).strict(), output: ok },
+  hb_compose_expect: { input: z.object({ botId: id, projectId: id }).strict(), output: ok },
   hb_conversation_create: {
     input: z.object({ botId: id, message: z.string().trim().min(1).max(20000), projectId: id.optional(), providerId: id.optional(), model: z.string().min(1).max(200).optional() }).strict(),
     output: z.object({ threadId: id }).strict(),

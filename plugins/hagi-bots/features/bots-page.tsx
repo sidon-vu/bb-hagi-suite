@@ -9,8 +9,6 @@ import { BotAvatar, StatusChip, StatusDot } from "./bot-avatar";
 import { parseSubPath } from "./routes";
 import { ImportLegacyButton } from "./import-dialog";
 import { BotEditor } from "./bot-editor";
-import { NewConversationDialog } from "./new-conversation-dialog";
-
 function BotCard({ bot, index }: { bot: MockBot; index: number }) {
   const navigate = useBbNavigate();
   return (
@@ -118,7 +116,22 @@ function BotDetail({ bot, threadId, live, userMd }: { bot: MockBot; threadId: st
     if (threadId) setTab("threads");
   }, [threadId]);
   const activeTab = tab;
-  const [composing, setComposing] = useState(false);
+  const navigate = useBbNavigate();
+  const rpc = useRpc<typeof rpcContract>();
+  const [picking, setPicking] = useState(false);
+  const [createError, setCreateError] = useState<string | null>(null);
+  // Mở New thread gốc của BB; server nhớ để gắn thread đầu tiên của project vào bot này.
+  const compose = async (projectId: string | undefined) => {
+    setPicking(false);
+    setCreateError(null);
+    if (!projectId) { setCreateError("Bot chưa gắn project nào"); return; }
+    try {
+      await rpc.call("hb_compose_expect", { botId: bot.id, projectId });
+      navigate.toCompose({ projectId, focusPrompt: true });
+    } catch (e) {
+      setCreateError(e instanceof Error ? e.message : String(e));
+    }
+  };
   return (
     <>
       <div className="hagi-bots-detail__head">
@@ -131,10 +144,13 @@ function BotDetail({ bot, threadId, live, userMd }: { bot: MockBot; threadId: st
           <StatusChip status={botStatus(bot)} detail={bot.lastActivity} />
         </div>
         {live ? (
-          <>
-            <button type="button" className="hagi-bots-btn" onClick={() => setComposing(true)}>＋ Hội thoại mới</button>
-            {composing ? <NewConversationDialog botId={bot.id} botName={bot.name} projects={bot.projects} onClose={() => setComposing(false)} /> : null}
-          </>
+          <div style={{ display: "flex", flexDirection: "column", gap: 4, alignItems: "flex-end" }}>
+            <button type="button" className="hagi-bots-btn" onClick={() => (bot.projects.length > 1 ? setPicking(!picking) : void compose(bot.projects[0]?.id))}>＋ Hội thoại mới</button>
+            {picking ? bot.projects.map((p) => (
+              <button key={p.id} type="button" className="hagi-bots-btn" onClick={() => void compose(p.id)}>{p.name}</button>
+            )) : null}
+            {createError ? <span className="hagi-bots-note hagi-bots-note--error">{createError}</span> : null}
+          </div>
         ) : (
           <button
             type="button"

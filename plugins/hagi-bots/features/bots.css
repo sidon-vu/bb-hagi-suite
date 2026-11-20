@@ -487,8 +487,3 @@
   font-style: normal;
 }
 .hagi-bots-note--error { color: var(--destructive, #f87171); }
-
-.hagi-newconv__input { width: 100%; box-sizing: border-box; resize: vertical; padding: 10px; border: 1px solid var(--border); border-radius: 8px; background: var(--card, transparent); color: inherit; font: inherit; }
-.hagi-newconv__row { display: flex; flex-wrap: wrap; gap: 8px; margin-top: 10px; }
-.hagi-newconv__row--end { justify-content: flex-end; }
-.hagi-newconv__row select { flex: 1 1 140px; min-width: 0; padding: 6px 8px; border: 1px solid var(--border); border-radius: 6px; background: var(--card, transparent); color: inherit; }
