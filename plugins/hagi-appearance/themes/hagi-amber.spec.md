@@ -8,7 +8,7 @@ Nguồn biến BB: `theming.md` của skill bb-cli + CSS nén của BB (`index-*
 
 | Mục | Quan sát từ ảnh | Biến BB | Kết luận |
 |---|---|---|---|
-| Nền chính | Gần đen | `--canvas` (đang `#0f0f10` dark) | Làm được bằng theme |
+| Nền chính | Gần đen ấm | `--canvas` (đang `#0f0e0c` dark, mã người dùng đo) | Làm được bằng theme |
 | Sidebar sáng hơn nền | Sidebar hơi sáng hơn vùng nội dung | `--sidebar`, `--sidebar-foreground`, `--sidebar-border` (mặc định tự pha từ canvas+ink) | Làm được — đặt `--sidebar` riêng nếu muốn chênh rõ hơn |
 | Chữ thường | Trắng ngà, đọc rõ trên nền đen | `--ink` (đang `#ece8df`), tầng phụ `--muted-foreground`, `--subtle-foreground`, `--readback-foreground` | Làm được |
 | Nhấn vàng hổ phách | Vàng cam cho nút, link, highlight, biểu đồ | `--primary` (đang `#f2b13c`), `--primary-foreground`, `--file-accent` | Làm được |
@@ -59,20 +59,22 @@ Mọi mã màu dưới đây là **ước lượng bằng mắt từ ảnh**, ch
 
 ## Đã làm trong hagi-amber.css
 
-- Nền gần đen dark `#0f0f10`; bản sáng giấy ấm `#f5f1e8`.
+- Nền khung chính dark `#0f0e0c`, sidebar dark `#171614` (sáng hơn khung chính). Cả hai là mã người dùng đo từ ảnh mẫu. Bản sáng: giấy ấm `#f5f1e8`, sidebar pha ink 5%.
+- Thẻ và menu nổi (`--card`, `--popover`) dark `#1a1815`; nền ô nhập tin nhắn dark `#1a1815` (qua nhãn `data-hagi-composer-surface`, xem dưới).
 - Nhấn hổ phách: dark `#f2b13c`, light `#b9770e`.
 - Chữ: dark `#ece8df`, light `#26221b`; 3 tầng chữ phụ pha bằng `color-mix`.
 - Font mono toàn bộ: `--font-sans/mono/terminal` = JetBrains Mono → Geist Mono → Berkeley Mono → SF Mono → fallback hệ thống.
-- Trạng thái: destructive, warning (trùng màu nhấn), success, diff added/removed, file accent.
+- Trạng thái: destructive, warning (trùng màu nhấn), success, diff added/removed, file accent, `--attention`, `--pr-merged`.
+- Hàng chọn đỏ-cam: `--surface-selected` + `--surface-selected-border` (`#d4694a`, màu ước lượng bằng mắt).
+- `--radius: 0.65rem`; viền sáng hơn (`--border`, `--border-hairline` ink 20%, `--border-seam` 15%, `--input` 34%).
+- Bảng màu terminal `--ansi-0..15` và `--ansi-bg-fg-0..15`.
+- Thử `--spacing: 0.27rem` (nới ~8%). Chưa biết BB có theo không.
+- Ô nhập tin nhắn: plugin `features/composer-surface.tsx` dò khung quanh ô gõ và gắn nhãn `data-hagi-composer-surface`; màu nằm trong CSS theme (`.dark [data-hagi-composer-surface]`, `!important`). Chưa kiểm chứng trên BB thật.
 
 ## Chưa làm, đề xuất
 
-- `--surface-selected` + `--surface-selected-border` thành đỏ cam (ước lượng bằng mắt từ ảnh, ví dụ vùng `#c2410c`) để hàng chọn khác hẳn màu nhấn vàng.
-- `--radius`: tăng nhẹ (ước lượng bằng mắt ~ `.65rem`) cho giống bo góc trong ảnh. Kiểm tra `--radius-2xl/3xl/4xl` vì chúng cố định, không theo `--radius`.
-- `--sidebar`: đặt sáng hơn `--canvas` một chút (ước lượng bằng mắt ~ ink 4–5%) cho giống tương phản sidebar/nội dung trong ảnh.
-- `--border`: tăng % pha ink nếu muốn viền sáng rõ như ảnh.
-- `--attention`, `--pr-merged`, `--ansi-0..15`: chưa đặt — cân nhắc đồng bộ bảng màu terminal.
-- Thử `--spacing` (nới khoảng thở toàn cục) — chưa xác minh theme được phép đặt; thử trên bản sao trước.
+- Bản sáng (light) cho thẻ, popover và ô nhập: chỉ làm khi người dùng có dùng chế độ sáng.
+- Kiểm tra `--radius-2xl/3xl/4xl`: chúng cố định, không theo `--radius`, nên thẻ lớn có thể không đổi bo góc.
 
 ## Không làm được bằng theme
 
@@ -84,4 +86,8 @@ Mọi mã màu dưới đây là **ước lượng bằng mắt từ ảnh**, ch
 ## Chưa xác minh
 
 - `--spacing`, `--text-*`, `--font-weight-*`: có trong CSS nén của BB nhưng KHÔNG có trong tài liệu theme — đặt trong `theme.css` có thể chạy (theme nạp cuối nên thắng cascade) nhưng chưa kiểm chứng thực tế.
-- `--sidebar` đặt trực tiếp có giữ được khi đổi light/dark không (cần đặt trong cả 2 block).
+- `--sidebar` đặt trực tiếp có giữ được khi đổi light/dark không (đã đặt trong cả 2 block, chưa thử đổi qua lại).
+- Nhãn `data-hagi-composer-surface` có gắn đúng khung ô nhập không, và CSS `!important` trong theme có được BB giữ không.
+- `--card` sáng hơn làm MỌI thẻ và menu đổi theo, chưa xem hết các màn hình.
+- `--spacing` có tác dụng không.
+- JetBrains Mono chưa chắc có trên máy (không có thì rơi về Consolas).
