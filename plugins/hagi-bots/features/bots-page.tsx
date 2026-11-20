@@ -117,6 +117,24 @@ function BotDetail({ bot, threadId, live, userMd }: { bot: MockBot; threadId: st
     if (threadId) setTab("threads");
   }, [threadId]);
   const activeTab = tab;
+  const navigate = useBbNavigate();
+  const rpc = useRpc<typeof rpcContract>();
+  const [creating, setCreating] = useState(false);
+  const [picking, setPicking] = useState(false);
+  const [createError, setCreateError] = useState<string | null>(null);
+  const create = async (projectId?: string) => {
+    setCreating(true);
+    setPicking(false);
+    setCreateError(null);
+    try {
+      const { threadId: created } = await rpc.call("hb_conversation_create", { botId: bot.id, ...(projectId ? { projectId } : {}) });
+      navigate.toThread(created);
+    } catch (e) {
+      setCreateError(e instanceof Error ? e.message : String(e));
+    } finally {
+      setCreating(false);
+    }
+  };
   return (
     <>
       <div className="hagi-bots-detail__head">
@@ -128,7 +146,17 @@ function BotDetail({ bot, threadId, live, userMd }: { bot: MockBot; threadId: st
           </p>
           <StatusChip status={botStatus(bot)} detail={bot.lastActivity} />
         </div>
-        {live ? null : (
+        {live ? (
+          <div style={{ display: "flex", flexDirection: "column", gap: 4, alignItems: "flex-end" }}>
+            <button type="button" className="hagi-bots-btn" disabled={creating} onClick={() => (bot.projects.length > 1 ? setPicking(!picking) : void create(bot.projects[0]?.id))}>
+              {creating ? "Đang tạo…" : "＋ Hội thoại mới"}
+            </button>
+            {picking ? bot.projects.map((p) => (
+              <button key={p.id} type="button" className="hagi-bots-btn" onClick={() => void create(p.id)}>{p.name}</button>
+            )) : null}
+            {createError ? <span className="hagi-bots-note hagi-bots-note--error">{createError}</span> : null}
+          </div>
+        ) : (
           <button
             type="button"
             className="hagi-bots-btn"

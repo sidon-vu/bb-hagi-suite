@@ -3,6 +3,8 @@ import { rpcContract } from "./features/hagi-contract";
 import { createHbotStore } from "./features/bot-store";
 import { legacyApply, legacyPreview } from "./features/import-legacy";
 import { registerRuntime } from "./features/runtime";
+import { registerMention } from "./features/mention";
+import { registerCli } from "./features/cli";
 
 const CHANGED = "hagi-bots-changed"; // channel riêng — bots-sidebar dùng project-bots-changed
 
@@ -51,6 +53,8 @@ export default async function plugin(bb: BbPluginApi) {
   void settings.get().then((value) => { runtimeOn = value.botsRuntime === true && value.botsBackend === true; });
   settings.onChange((next) => { runtimeOn = next.botsRuntime === true && next.botsBackend === true; });
   registerRuntime(bb, store, () => runtimeOn, publish);
+  registerMention(bb, store, () => runtimeOn);
+  registerCli(bb, store, () => runtimeOn);
   const backendOn = async () => {
     if ((await settings.get()).botsBackend !== true) throw new Error("Backend hagi-bots đang tắt — bật trong cài đặt plugin");
   };
@@ -106,6 +110,24 @@ export default async function plugin(bb: BbPluginApi) {
       store.unbind(threadId);
       publish();
       return { ok: true as const };
+    },
+    hb_conversation_create: async ({ botId, projectId }) => {
+      await backendOn();
+      if (!runtimeOn) throw new Error("Cần bật Runtime bots để tạo hội thoại thật");
+      const bot = store.require(botId);
+      const linked = store.legacyExtra<{ linkedProjectIds?: string[] }>(botId)?.linkedProjectIds ?? [];
+      const target = projectId ?? (linked.length === 1 ? linked[0] : undefined);
+      if (!target) throw new Error(linked.length ? "Bot có nhiều project — chọn một project" : "Bot chưa gắn project nào");
+      if (!linked.includes(target)) throw new Error("Project này không thuộc bot");
+      const thread = await bb.sdk.threads.spawn({
+        projectId: target,
+        environment: { type: "project-default" },
+        pluginMetadata: { hagiBotId: bot.id },
+        prompt: `Hội thoại mới của bot ${bot.name}. Chào ngắn một câu rồi chờ yêu cầu của người dùng.`,
+      });
+      store.bind(thread.id, bot.id);
+      publish();
+      return { threadId: thread.id };
     },
     hb_user_md_set: async ({ content }) => {
       await backendOn();

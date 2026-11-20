@@ -60,7 +60,10 @@ export function registerRuntime(bb: BbPluginApi, store: HbotStore, isOn: () => b
 
   bb.agents.configure((ctx) => {
     if (!isOn()) return { tools: [], skills: [] };
-    const botId = inherited(ctx.thread);
+    let botId = inherited(ctx.thread);
+    // Thread do hb_conversation_create tạo: gán ngay lượt đầu (tránh chạy đua với bind sau spawn). shortcut: metadata do agent ghi được, chỉ chấp nhận khi bot tồn tại.
+    const hint = ctx.pluginMetadata?.hagiBotId;
+    if (!botId && typeof hint === "string" && store.get(hint)) { store.bind(ctx.thread.id, hint); botId = hint; }
     const bot = botId ? store.get(botId) : null; // hàng hỏng → null, không ném (đúng lỗi của bản cũ)
     return bot ? { tools: ["hbot_read_state", "hbot_update_state"], skills: [], instructions: buildInstructions(bot, store.userMd()) } : { tools: [], skills: [] };
   });
