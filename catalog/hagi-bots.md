@@ -19,9 +19,10 @@ Cập nhật 2026-11-20.
 ### Phong cách & theo dõi
 
 - Phong cách "đội bot roster": card nhân sự, avatar SVG có mặt đổi theo trạng thái (đang làm/chờ input/nghỉ), chip màu, card nổi khi hover. Avatar waiting có vòng vàng.
-- Trạng thái bot suy ra từ thread: chờ > đang làm > nghỉ (giống luật bản gốc). Mỗi bot có `lastActivity`.
+- Trạng thái bot suy ra từ thread: chờ > đang làm > nghỉ (giống luật bản gốc). Mỗi bot có `lastActivity`, `createdAt`, `turns`.
 - Badge điều hướng = số thread đang CHỜ input (tone warning), không phải đếm bot.
-- Trang tổng có "Hoạt động gần đây" gom episodes mọi bot; tab Instructions có thanh độ đầy MEMORY.md /3000 (vàng khi >80%).
+- Trang tổng: dải tổng quan (bot/hội thoại/đang làm/chờ) + "Hoạt động gần đây" gom episodes mọi bot; tab Instructions có thanh độ đầy MEMORY.md /3000 (vàng khi >80%).
+- Chuyển động: `motion` (deps) cho card/feed/dialog/tab entrance; CSS keyframes cho avatar sống — chớp mắt, gật khi làm, nảy khi chờ, thở khi nghỉ; tôn trọng prefers-reduced-motion. Avatar "sống" nâng cao thì cân nhắc Rive (cần asset .riv riêng).
 
 ### Hướng UI
 

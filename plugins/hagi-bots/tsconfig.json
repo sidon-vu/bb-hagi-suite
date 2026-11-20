@@ -12,7 +12,8 @@
     "types": [
       "node"
     ],
-    "noEmit": true
+    "noEmit": true,
+    "skipLibCheck": true
   },
   "include": [
     "server.ts",

@@ -20,6 +20,8 @@ export interface MockBot {
   playbook: string;
   episodes: string[];
   lastActivity: string;
+  createdAt: string;
+  turns: number;
   projects: { id: string; name: string; role: "owner" | "member" }[];
   threads: MockThread[];
 }
@@ -81,6 +83,8 @@ const seed: MockBot[] = [
       "19/11 — Review lỗi chính tả: sửa 14 chỗ, không đổi nội dung",
     ],
     lastActivity: "Đang chạy 12 phút",
+    createdAt: "Vào đội 41 ngày",
+    turns: 182,
     projects: [
       { id: "proj_docs", name: "docs-site", role: "owner" },
       { id: "proj_bb", name: "bb-workbench", role: "member" },
@@ -108,6 +112,8 @@ const seed: MockBot[] = [
     playbook: "- Nêu rủi ro trước, gợi ý sau\n- Comment lỗi nhỏ gom một bình luận",
     episodes: ["20/11 — Review PR #42: phát hiện race condition ở cache"],
     lastActivity: "Chờ input 2 giờ",
+    createdAt: "Vào đội 18 ngày",
+    turns: 67,
     projects: [{ id: "proj_bb", name: "bb-workbench", role: "member" }],
     threads: [
       {
@@ -132,6 +138,8 @@ const seed: MockBot[] = [
     playbook: "",
     episodes: [],
     lastActivity: "Nghỉ 3 ngày",
+    createdAt: "Vào đội 9 ngày",
+    turns: 24,
     projects: [],
     threads: [
       { id: "t_bench_1", title: "Tổng hợp tình trạng tuần", status: "idle" },
@@ -191,7 +199,7 @@ export function saveBot(draft: BotDraft, botId?: string) {
     bots = bots.map((bot) => (bot.id === botId ? { ...bot, ...draft } : bot));
   } else {
     const id = `hb_${Date.now().toString(36)}`;
-    bots = [...bots, { id, threads: [], projects: [], episodes: [], lastActivity: "Vừa tạo", ...draft }];
+    bots = [...bots, { id, threads: [], projects: [], episodes: [], lastActivity: "Vừa tạo", createdAt: "Vừa vào đội", turns: 0, ...draft }];
   }
   emit();
   return true;

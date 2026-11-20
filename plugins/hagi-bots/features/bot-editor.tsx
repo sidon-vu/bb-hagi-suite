@@ -1,4 +1,5 @@
 import { useState } from "react";
+import { motion } from "motion/react";
 import { closeEditor, saveBot, useBots, type BotDraft, type EditorTarget, type MockBot } from "./mock-store";
 
 const COLORS = ["#8b5cf6", "#06b6d4", "#f59e0b", "#ef4444", "#22c55e", "#ec4899"];
@@ -35,8 +36,8 @@ export function BotEditor({ target }: { target: EditorTarget }) {
   };
 
   return (
-    <div className="hagi-bots-editor__backdrop" onClick={closeEditor}>
-      <div className="hagi-bots-editor" role="dialog" aria-modal="true" aria-label={editing ? "Sửa bot" : "Tạo bot"} onClick={(event) => event.stopPropagation()}>
+    <motion.div className="hagi-bots-editor__backdrop" onClick={closeEditor} initial={{ opacity: 0 }} animate={{ opacity: 1 }} transition={{ duration: 0.15 }}>
+      <motion.div className="hagi-bots-editor" role="dialog" aria-modal="true" aria-label={editing ? "Sửa bot" : "Tạo bot"} onClick={(event) => event.stopPropagation()} initial={{ opacity: 0, scale: 0.95, y: 8 }} animate={{ opacity: 1, scale: 1, y: 0 }} transition={{ duration: 0.2 }}>
         <h2>{editing ? `Sửa ${editing.name}` : "Tạo bot"}</h2>
         <p className="hagi-bots-note" style={{ margin: 0 }}>
           Dữ liệu giả — lưu vào bộ nhớ, mất khi tải lại trang.
@@ -100,7 +101,7 @@ export function BotEditor({ target }: { target: EditorTarget }) {
             Lưu
           </button>
         </div>
-      </div>
-    </div>
+      </motion.div>
+    </motion.div>
   );
 }

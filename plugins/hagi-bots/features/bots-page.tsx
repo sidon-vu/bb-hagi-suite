@@ -1,4 +1,5 @@
 import { useEffect, useState } from "react";
+import { motion } from "motion/react";
 import { useBbNavigate, useSettings } from "@get-bb/plugin-sdk/app";
 import type { PluginNavPanelProps } from "@get-bb/plugin-sdk/app";
 import { addMockThread, botStatus, openEditor, useBots, useEditorTarget, useUserMd, saveUserMd, MOCK_GUIDANCE, type MockBot } from "./mock-store";
@@ -6,12 +7,15 @@ import { BotAvatar, StatusChip, StatusDot } from "./bot-avatar";
 import { parseSubPath } from "./routes";
 import { BotEditor } from "./bot-editor";
 
-function BotCard({ bot }: { bot: MockBot }) {
+function BotCard({ bot, index }: { bot: MockBot; index: number }) {
   const navigate = useBbNavigate();
   return (
-    <button
+    <motion.button
       type="button"
       className="hagi-bot-card"
+      initial={{ opacity: 0, y: 10 }}
+      animate={{ opacity: 1, y: 0 }}
+      transition={{ duration: 0.25, delay: index * 0.05 }}
       onClick={() => navigate.toPluginPanel("bots", { subPath: `bots/${bot.id}` })}
     >
       <span className="hagi-bot-card__head">
@@ -23,9 +27,9 @@ function BotCard({ bot }: { bot: MockBot }) {
       </span>
       <StatusChip status={botStatus(bot)} detail={bot.lastActivity} />
       <span className="hagi-bot-card__counts">
-        {bot.threads.length} hội thoại · {bot.projects.length} project
+        {bot.threads.length} hội thoại · {bot.projects.length} project · {bot.turns} lượt chạy
       </span>
-    </button>
+    </motion.button>
   );
 }
 
@@ -45,17 +49,20 @@ function ActivityFeed({ bots }: { bots: MockBot[] }) {
       <div style={{ fontSize: 11, fontWeight: 600, color: "var(--muted-foreground)", marginBottom: 4 }}>Hoạt động gần đây</div>
       <div className="hagi-feed">
         {items.map(({ bot, text }, index) => (
-          <button
+          <motion.button
             key={index}
             type="button"
             className="hagi-feed__item"
             style={{ border: "none", background: "none", cursor: "pointer", font: "inherit", textAlign: "left", width: "100%" }}
+            initial={{ opacity: 0, x: -8 }}
+            animate={{ opacity: 1, x: 0 }}
+            transition={{ duration: 0.2, delay: index * 0.04 }}
             onClick={() => navigate.toPluginPanel("bots", { subPath: `bots/${bot.id}` })}
           >
             <BotAvatar bot={bot} size={18} />
             <span className="hagi-feed__bot">{bot.name}</span>
             <span className="hagi-feed__text">{text}</span>
-          </button>
+          </motion.button>
         ))}
       </div>
     </div>
@@ -113,7 +120,7 @@ function BotDetail({ bot, threadId }: { bot: MockBot; threadId: string | null })
         <div className="hagi-bots-detail__meta">
           <h1>{bot.name}</h1>
           <p>
-            {bot.role} · {bot.threads.length} hội thoại
+            {bot.role} · {bot.createdAt} · {bot.turns} lượt chạy
           </p>
           <StatusChip status={botStatus(bot)} detail={bot.lastActivity} />
         </div>
@@ -142,6 +149,7 @@ function BotDetail({ bot, threadId }: { bot: MockBot; threadId: string | null })
           </button>
         ))}
       </div>
+      <motion.div key={activeTab} initial={{ opacity: 0, y: 6 }} animate={{ opacity: 1, y: 0 }} transition={{ duration: 0.2 }}>
       {activeTab === "threads" ? <ThreadRows bot={bot} activeThreadId={threadId} /> : null}
       {activeTab === "context" ? (
         <div style={{ display: "flex", flexDirection: "column", gap: 12 }}>
@@ -194,7 +202,39 @@ function BotDetail({ bot, threadId }: { bot: MockBot; threadId: string | null })
           {bot.projects.length === 0 ? <p style={{ color: "var(--muted-foreground)", fontSize: 12 }}>Chưa liên kết project nào.</p> : null}
         </div>
       ) : null}
+      </motion.div>
     </>
+  );
+}
+
+// Dải tổng quan: số bot, số hội thoại, đang làm, đang chờ — nhìn một cái biết tình hình đội.
+function OverviewStrip({ bots }: { bots: MockBot[] }) {
+  let threads = 0;
+  let working = 0;
+  let waiting = 0;
+  for (const bot of bots) {
+    for (const thread of bot.threads) {
+      const rows = [thread, ...(thread.children ?? [])];
+      threads += rows.length;
+      working += rows.filter((row) => row.status === "working").length;
+      waiting += rows.filter((row) => row.status === "waiting").length;
+    }
+  }
+  const stats = [
+    { label: "Bot", value: bots.length },
+    { label: "Hội thoại", value: threads },
+    { label: "Đang làm", value: working },
+    { label: "Chờ input", value: waiting, warn: waiting > 0 },
+  ];
+  return (
+    <div style={{ display: "flex", gap: 16, flexWrap: "wrap" }}>
+      {stats.map((stat) => (
+        <div key={stat.label} style={{ display: "flex", alignItems: "baseline", gap: 6 }}>
+          <span style={{ fontSize: 22, fontWeight: 700, color: stat.warn ? "var(--warning, #fbbf24)" : "var(--foreground)" }}>{stat.value}</span>
+          <span style={{ fontSize: 11, color: "var(--muted-foreground)" }}>{stat.label}</span>
+        </div>
+      ))}
+    </div>
   );
 }
 
@@ -259,9 +299,10 @@ export function BotsPage({ subPath }: PluginNavPanelProps) {
       {current.botId === null ? (
         <>
           <p className="hagi-bots-note">Bản vỏ UI — dữ liệu giả trong bộ nhớ, mất khi tải lại. Chưa nối trạng thái thật.</p>
+          <OverviewStrip bots={bots} />
           <div className="hagi-bots-grid">
-            {bots.map((entry) => (
-              <BotCard key={entry.id} bot={entry} />
+            {bots.map((entry, index) => (
+              <BotCard key={entry.id} bot={entry} index={index} />
             ))}
             <button type="button" className="hagi-bot-card hagi-bot-card--add" onClick={() => openEditor({ kind: "create" })}>
               ＋ Bot mới

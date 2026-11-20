@@ -119,6 +119,37 @@
   flex-shrink: 0;
 }
 .hagi-bot-avatar[data-status="waiting"] { box-shadow: 0 0 0 2px var(--background), 0 0 0 4px var(--warning, #fbbf24); }
+
+/* Avatar sống: chớp mắt, thở khi nghỉ, nảy nhẹ khi chờ, gật khi làm */
+.hagi-eye {
+  transform-box: fill-box;
+  transform-origin: center;
+  animation: hagi-blink 4.6s ease-in-out infinite;
+}
+.hagi-bot-avatar[data-status="waiting"] .hagi-eye { animation-duration: 5.4s; }
+.hagi-bot-avatar[data-status="working"] { animation: hagi-nod 2.2s ease-in-out infinite; }
+.hagi-bot-avatar[data-status="waiting"] { animation: hagi-bob 3.2s ease-in-out infinite; }
+.hagi-bot-avatar[data-status="idle"] { animation: hagi-breathe 5s ease-in-out infinite; }
+
+@keyframes hagi-blink {
+  0%, 92%, 100% { transform: scaleY(1); }
+  95% { transform: scaleY(0.08); }
+}
+@keyframes hagi-nod {
+  0%, 100% { transform: translateY(0); }
+  50% { transform: translateY(1.5px); }
+}
+@keyframes hagi-bob {
+  0%, 100% { transform: translateY(0); }
+  50% { transform: translateY(-2.5px); }
+}
+@keyframes hagi-breathe {
+  0%, 100% { transform: scale(1); }
+  50% { transform: scale(1.04); }
+}
+@media (prefers-reduced-motion: reduce) {
+  .hagi-bot-avatar, .hagi-eye { animation: none !important; }
+}
 .hagi-bot-avatar[data-shape="round"] { border-radius: 9999px; }
 .hagi-bot-avatar[data-shape="square"] { border-radius: 6px; }
 .hagi-bot-avatar[data-shape="hex"] { clip-path: polygon(25% 5%, 75% 5%, 100% 50%, 75% 95%, 25% 95%, 0 50%); }
