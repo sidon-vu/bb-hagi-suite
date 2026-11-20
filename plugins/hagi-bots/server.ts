@@ -102,8 +102,23 @@ export default async function plugin(bb: BbPluginApi) {
       await backendOn();
       const scan = legacyPreview(bb, store);
       return {
-        ...scan,
-        bots: scan.bots.map((bot) => ({ ...bot, soulChars: bot.soul.length, memoryChars: bot.memory.length })),
+        found: scan.found,
+        error: scan.error,
+        bots: scan.bots.map((bot) => ({
+          id: bot.id,
+          name: bot.name,
+          role: bot.role,
+          color: bot.color,
+          shape: bot.shape,
+          soulChars: bot.soul.length,
+          memoryChars: bot.memory.length,
+          threadCount: bot.threadCount,
+          issues: bot.issues,
+          already: bot.already,
+        })),
+        bindingCount: scan.bindingCount,
+        sectionCount: scan.sectionCount,
+        ownerCount: scan.ownerCount,
       };
     },
     hb_import_apply: async () => {
