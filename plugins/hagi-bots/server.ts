@@ -12,5 +12,11 @@ export default async function plugin(bb: BbPluginApi) {
       description: "Mục Bots trong thanh điều hướng mở trang riêng: danh sách bot + hội thoại của bot. Bản vỏ UI — dữ liệu giả, chưa có tính năng thật.",
       default: false,
     },
+    attentionDock: {
+      type: "boolean",
+      label: "Thẻ báo chờ duyệt",
+      description: "Thẻ nổi góc màn hình khi có bot chờ duyệt — avatar + tên bot + việc đang chờ; bấm để tới chỗ duyệt. Cần bật cùng Trang Bots.",
+      default: false,
+    },
   });
 }
