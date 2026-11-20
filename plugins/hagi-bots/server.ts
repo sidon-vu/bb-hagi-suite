@@ -111,7 +111,7 @@ export default async function plugin(bb: BbPluginApi) {
       publish();
       return { ok: true as const };
     },
-    hb_conversation_create: async ({ botId, projectId }) => {
+    hb_conversation_create: async ({ botId, message, projectId, providerId, model }) => {
       await backendOn();
       if (!runtimeOn) throw new Error("Cần bật Runtime bots để tạo hội thoại thật");
       const bot = store.require(botId);
@@ -123,7 +123,9 @@ export default async function plugin(bb: BbPluginApi) {
         projectId: target,
         environment: { type: "project-default" },
         pluginMetadata: { hagiBotId: bot.id },
-        prompt: `Hội thoại mới của bot ${bot.name}. Chào ngắn một câu rồi chờ yêu cầu của người dùng.`,
+        prompt: message,
+        ...(providerId ? { providerId } : {}),
+        ...(providerId && model ? { model } : {}),
       });
       store.bind(thread.id, bot.id);
       publish();
