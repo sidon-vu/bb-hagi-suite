@@ -447,3 +447,37 @@
 @media (prefers-reduced-motion: reduce) {
   .hagi-attention__cta { animation: none !important; }
 }
+
+/* Dialog nhập từ bots-sidebar */
+.hagi-import-list {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+.hagi-import-item {
+  display: grid;
+  grid-template-columns: auto 1fr;
+  gap: 1px 8px;
+  align-items: center;
+  font-size: 12.5px;
+  padding: 8px 10px;
+  border: 1px solid var(--border);
+  border-radius: 10px;
+}
+.hagi-import-item__dot {
+  width: 10px;
+  height: 10px;
+  border-radius: 9999px;
+  grid-row: span 2;
+}
+.hagi-import-item small { color: var(--muted-foreground); grid-column: 2; }
+.hagi-import-item__issue {
+  grid-column: 2;
+  color: var(--warning, #fbbf24);
+  font-size: 11px;
+  font-style: normal;
+}
+.hagi-bots-note--error { color: var(--destructive, #f87171); }

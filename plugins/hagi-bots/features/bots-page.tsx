@@ -5,6 +5,7 @@ import type { PluginNavPanelProps } from "@get-bb/plugin-sdk/app";
 import { addMockThread, botStatus, openEditor, useBots, useEditorTarget, useUserMd, saveUserMd, MOCK_GUIDANCE, type MockBot } from "./mock-store";
 import { BotAvatar, StatusChip, StatusDot } from "./bot-avatar";
 import { parseSubPath } from "./routes";
+import { ImportLegacyButton } from "./import-dialog";
 import { BotEditor } from "./bot-editor";
 
 function BotCard({ bot, index }: { bot: MockBot; index: number }) {
@@ -299,6 +300,7 @@ export function BotsPage({ subPath }: PluginNavPanelProps) {
       {current.botId === null ? (
         <>
           <p className="hagi-bots-note">Bản vỏ UI — dữ liệu giả trong bộ nhớ, mất khi tải lại. Chưa nối trạng thái thật.</p>
+          {values?.botsBackend === true ? <ImportLegacyButton /> : null}
           <OverviewStrip bots={bots} />
           <div className="hagi-bots-grid">
             {bots.map((entry, index) => (

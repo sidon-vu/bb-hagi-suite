@@ -1,6 +1,7 @@
 import type { BbPluginApi } from "@get-bb/plugin-sdk";
 import { rpcContract } from "./features/hagi-contract";
 import { createHbotStore } from "./features/bot-store";
+import { legacyApply, legacyPreview } from "./features/import-legacy";
 
 const CHANGED = "hagi-bots-changed"; // channel riêng — bots-sidebar dùng project-bots-changed
 
@@ -96,6 +97,20 @@ export default async function plugin(bb: BbPluginApi) {
     hb_episodes_list: async ({ botId }) => {
       await backendOn();
       return { episodes: store.episodes(botId) };
+    },
+    hb_import_preview: async () => {
+      await backendOn();
+      const scan = legacyPreview(bb, store);
+      return {
+        ...scan,
+        bots: scan.bots.map((bot) => ({ ...bot, soulChars: bot.soul.length, memoryChars: bot.memory.length })),
+      };
+    },
+    hb_import_apply: async () => {
+      await backendOn();
+      const result = legacyApply(bb, store);
+      publish();
+      return result;
     },
   });
 }

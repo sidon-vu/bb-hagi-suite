@@ -86,4 +86,29 @@ export const rpcContract = defineRpcContract({
     input: z.object({ botId: id.optional() }).strict(),
     output: z.object({ episodes: z.array(hbotEpisodeSchema) }).strict(),
   },
+  // Nhập từ bots-sidebar: preview read-only trước, apply chỉ chạy khi xác nhận.
+  hb_import_preview: {
+    input: z.null(),
+    output: z.object({
+      found: z.boolean(),
+      error: z.string().nullable(),
+      bots: z.array(z.object({
+        id, name: z.string(), role: z.string(), color: z.string(), shape: hbotShapeSchema,
+        soulChars: z.number(), memoryChars: z.number(), threadCount: z.number(),
+        issues: z.array(z.string()), already: z.boolean(),
+      }).strict()),
+      bindingCount: z.number(),
+      sectionCount: z.number(),
+      ownerCount: z.number(),
+    }).strict(),
+  },
+  hb_import_apply: {
+    input: z.null(),
+    output: z.object({
+      imported: z.number(),
+      skipped: z.array(z.object({ id, name: z.string(), reason: z.string() }).strict()),
+      bindings: z.number(),
+      warnings: z.array(z.string()),
+    }).strict(),
+  },
 });

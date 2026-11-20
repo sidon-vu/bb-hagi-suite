@@ -34,6 +34,11 @@ export function createHbotStore(bb: BbPluginApi) {
     db.prepare("INSERT INTO hbot_bots(id,data) VALUES (?,?) ON CONFLICT(id) DO UPDATE SET data=excluded.data").run(value.id, JSON.stringify(value));
     return value;
   };
+  // Ghi record đã đầy đủ (import giữ nguyên id); KHÔNG ghi đè bot đã tồn tại.
+  const insert = (bot: HbotMetadata): HbotMetadata => {
+    if (get(bot.id)) throw new Error(`Bot ${bot.id} đã tồn tại`);
+    return save(bot);
+  };
   const create = (fields: Omit<HbotMetadata, "id" | "createdAt" | "updatedAt" | "order">): HbotMetadata =>
     save({
       ...fields,
@@ -93,11 +98,18 @@ export function createHbotStore(bb: BbPluginApi) {
       : db.prepare(`${episodeRow} ORDER BY created_at DESC`).all()) as HbotEpisode[];
 
   return {
-    get, require, list, create, update, remove,
+    get, require, list, create, update, remove, insert,
     owner, bind, unbind, threadsOf, bindings,
     userMd: () => state<string>(USER_MD_KEY) ?? "",
     setUserMd: (content: string) => setState(USER_MD_KEY, content),
     addEpisode, episodes,
+    // Dữ liệu legacy còn thừa của bots-sidebar, giữ nguyên để map dần đợt sau.
+    setLegacyExtra: (botId: string, extra: unknown) => setState(`legacy:${botId}`, extra),
+    legacyExtra: <T>(botId: string) => state<T>(`legacy:${botId}`),
+    setLegacyDump: (sections: unknown[], owners: unknown[]) => {
+      setState("legacy:sections", sections);
+      setState("legacy:project-owners", owners);
+    },
   };
 }
 
