@@ -2,6 +2,7 @@ import type { BbPluginApi } from "@get-bb/plugin-sdk";
 import { rpcContract } from "./features/hagi-contract";
 import { createHbotStore } from "./features/bot-store";
 import { legacyApply, legacyPreview } from "./features/import-legacy";
+import { registerRuntime } from "./features/runtime";
 
 const CHANGED = "hagi-bots-changed"; // channel riêng — bots-sidebar dùng project-bots-changed
 
@@ -35,10 +36,21 @@ export default async function plugin(bb: BbPluginApi) {
       description: "Store SQLite + RPC của hagi-bots (hb_*). Chỉ dữ liệu riêng — chưa hook/claim thread nên vẫn an toàn chạy cùng Bots Sidebar.",
       default: false,
     },
+    botsRuntime: {
+      type: "boolean",
+      label: "Runtime bots (thật)",
+      description: "Inject SOUL/MEMORY/PLAYBOOK vào agent + tool hbot_read_state/hbot_update_state + thread con kế thừa bot. CHỈ bật sau khi đã TẮT plugin bots-sidebar (bật đôi = agent nhận 2 bộ instructions/tool). Cần bật Backend bots.",
+      default: false,
+    },
   });
 
   const store = createHbotStore(bb);
   const publish = () => bb.realtime.publish(CHANGED, { updatedAt: Date.now() });
+  // agents.configure là đồng bộ nên cache công tắc; onChange giữ cho cache đúng.
+  let runtimeOn = false;
+  void settings.get().then((value) => { runtimeOn = value.botsRuntime === true && value.botsBackend === true; });
+  settings.onChange((next) => { runtimeOn = next.botsRuntime === true && next.botsBackend === true; });
+  registerRuntime(bb, store, () => runtimeOn, publish);
   const backendOn = async () => {
     if ((await settings.get()).botsBackend !== true) throw new Error("Backend hagi-bots đang tắt — bật trong cài đặt plugin");
   };
