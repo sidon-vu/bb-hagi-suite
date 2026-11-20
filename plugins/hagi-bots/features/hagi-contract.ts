@@ -47,7 +47,11 @@ export const rpcContract = defineRpcContract({
   hb_bots_list: {
     input: z.null(),
     output: z.object({
-      bots: z.array(hbotMetadataSchema),
+      bots: z.array(
+        hbotMetadataSchema.extend({
+          projects: z.array(z.object({ id, name: z.string(), role: z.enum(["owner", "member"]) }).strict()),
+        }),
+      ),
       threadBindings: z.array(z.object({ threadId: id, botId: id }).strict()),
       userMd: z.string().max(4096),
     }).strict(),

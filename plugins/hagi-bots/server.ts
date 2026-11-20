@@ -46,7 +46,20 @@ export default async function plugin(bb: BbPluginApi) {
   bb.rpc.register(rpcContract, {
     hb_bots_list: async () => {
       await backendOn();
-      return { bots: store.list(), threadBindings: store.bindings(), userMd: store.userMd() };
+      const projects = await bb.sdk.projects.list({ includePersonal: true });
+      const owners = store.legacyExtra<{ projectId: string; botId: string }[]>("legacy:project-owners") ?? [];
+      const bots = store.list().map((bot) => {
+        const linked = store.legacyExtra<{ linkedProjectIds?: string[] }>(bot.id)?.linkedProjectIds ?? [];
+        return {
+          ...bot,
+          projects: linked.map((pid) => ({
+            id: pid,
+            name: projects.find((project) => project.id === pid)?.name ?? pid,
+            role: owners.some((owner) => owner.botId === bot.id && owner.projectId === pid) ? ("owner" as const) : ("member" as const),
+          })),
+        };
+      });
+      return { bots, threadBindings: store.bindings(), userMd: store.userMd() };
     },
     hb_bot_get: async ({ botId }) => {
       await backendOn();

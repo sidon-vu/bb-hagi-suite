@@ -2,7 +2,8 @@ import { useEffect, useMemo, useRef } from "react";
 import { useBbNavigate, useSettings } from "@get-bb/plugin-sdk/app";
 import { AnimatePresence, motion } from "motion/react";
 import { BotAvatar } from "./bot-avatar";
-import { botStatus, useBots, type MockBot, type MockThread } from "./mock-store";
+import { botStatus, type MockBot, type MockThread } from "./mock-store";
+import { useDataBots } from "./live-store";
 
 interface WaitingItem {
   bot: MockBot;
@@ -66,8 +67,8 @@ function avatarIconUrl(bot: MockBot): Promise<string | undefined> {
 }
 
 // OS toast qua Web Notification: hiện cả khi cửa sổ BB thu nhỏ (tab còn sống).
-// Mock: onclick mở trang bot; backend thật sẽ navigate.toThread(threadId).
-function useOsNotify(enabled: boolean, items: WaitingItem[], navigate: ReturnType<typeof useBbNavigate>) {
+// Live → navigate.toThread(threadId) tới chỗ duyệt thật; mock → trang chi tiết bot.
+function useOsNotify(enabled: boolean, live: boolean, items: WaitingItem[], navigate: ReturnType<typeof useBbNavigate>) {
   const notified = useRef(new Set<string>());
   const ids = items.map((item) => item.thread.id).join(",");
 
@@ -76,7 +77,8 @@ function useOsNotify(enabled: boolean, items: WaitingItem[], navigate: ReturnTyp
       const toast = new Notification(`${bot.name} cần duyệt`, { body: thread.title, tag: `hagi-bot-${thread.id}`, ...(icon ? { icon } : {}) });
       toast.onclick = () => {
         window.focus();
-        navigate.toPluginPanel("bots", { subPath: `bots/${bot.id}/threads/${thread.id}` });
+        if (live) navigate.toThread(thread.id);
+        else navigate.toPluginPanel("bots", { subPath: `bots/${bot.id}/threads/${thread.id}` });
       };
     });
   };
@@ -109,18 +111,18 @@ function useOsNotify(enabled: boolean, items: WaitingItem[], navigate: ReturnTyp
 }
 
 // Thẻ nổi toàn app báo bot đang chờ duyệt — ý tưởng đã chốt trong catalog.
-// Mock: bấm mở trang chi tiết bot; backend thật sẽ navigate.toThread(threadId).
+// Live → toThread(threadId); mock → trang chi tiết bot.
 export function AttentionDock() {
   const { values, isLoading } = useSettings();
   const navigate = useBbNavigate();
-  const bots = useBots();
+  const { bots, live } = useDataBots();
 
   const enabled = !isLoading && values?.botsPanel === true;
   const items = useMemo<WaitingItem[]>(
     () => (enabled ? bots.flatMap((bot) => waitingThreads(bot).map((thread) => ({ bot, thread }))) : []),
     [enabled, bots],
   );
-  useOsNotify(enabled && values?.osNotify === true, items, navigate);
+  useOsNotify(enabled && values?.osNotify === true, live, items, navigate);
 
   if (!enabled || values?.attentionDock !== true || items.length === 0) return null;
 
@@ -136,7 +138,9 @@ export function AttentionDock() {
             initial={{ opacity: 0, y: 14, scale: 0.95 }}
             animate={{ opacity: 1, y: 0, scale: 1 }}
             exit={{ opacity: 0, y: 8, scale: 0.95 }}
-            onClick={() => navigate.toPluginPanel("bots", { subPath: `bots/${bot.id}/threads/${thread.id}` })}
+            onClick={() =>
+              live ? navigate.toThread(thread.id) : navigate.toPluginPanel("bots", { subPath: `bots/${bot.id}/threads/${thread.id}` })
+            }
           >
             <BotAvatar bot={bot} size={32} />
             <span className="hagi-attention__text">

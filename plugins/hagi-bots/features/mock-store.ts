@@ -24,6 +24,8 @@ export interface MockBot {
   turns: number;
   projects: { id: string; name: string; role: "owner" | "member" }[];
   threads: MockThread[];
+  // Live bot: revision CAS cho hb_bot_update; mock không có.
+  updatedAt?: number;
 }
 
 // Trạng thái bot suy ra từ thread: chờ input > đang làm > nghỉ (ưu tiên như bản gốc).

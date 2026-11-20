@@ -1,8 +1,10 @@
 import { useEffect, useState } from "react";
 import { motion } from "motion/react";
-import { useBbNavigate, useSettings } from "@get-bb/plugin-sdk/app";
+import { useBbNavigate, useRpc, useSettings } from "@get-bb/plugin-sdk/app";
 import type { PluginNavPanelProps } from "@get-bb/plugin-sdk/app";
-import { addMockThread, botStatus, openEditor, useBots, useEditorTarget, useUserMd, saveUserMd, MOCK_GUIDANCE, type MockBot } from "./mock-store";
+import type { rpcContract } from "./hagi-contract";
+import { addMockThread, botStatus, openEditor, useEditorTarget, saveUserMd, MOCK_GUIDANCE, type MockBot } from "./mock-store";
+import { useDataBots } from "./live-store";
 import { BotAvatar, StatusChip, StatusDot } from "./bot-avatar";
 import { parseSubPath } from "./routes";
 import { ImportLegacyButton } from "./import-dialog";
@@ -70,8 +72,10 @@ function ActivityFeed({ bots }: { bots: MockBot[] }) {
   );
 }
 
-function ThreadRows({ bot, activeThreadId }: { bot: MockBot; activeThreadId: string | null }) {
+function ThreadRows({ bot, activeThreadId, live }: { bot: MockBot; activeThreadId: string | null; live: boolean }) {
   const navigate = useBbNavigate();
+  const openThread = (threadId: string) =>
+    live ? navigate.toThread(threadId) : navigate.toPluginPanel("bots", { subPath: `bots/${bot.id}/threads/${threadId}` });
   return (
     <div className="hagi-bots-threadlist">
       {bot.threads.map((thread) => (
@@ -81,7 +85,7 @@ function ThreadRows({ bot, activeThreadId }: { bot: MockBot; activeThreadId: str
             className="hagi-bots-threadrow"
             style={{ width: "100%", border: "none", background: "none", cursor: "pointer", font: "inherit", textAlign: "left" }}
             data-active={activeThreadId === thread.id || undefined}
-            onClick={() => navigate.toPluginPanel("bots", { subPath: `bots/${bot.id}/threads/${thread.id}` })}
+            onClick={() => openThread(thread.id)}
           >
             <StatusDot status={thread.status} />
             <span style={{ flex: 1 }}>{thread.title}</span>
@@ -94,7 +98,7 @@ function ThreadRows({ bot, activeThreadId }: { bot: MockBot; activeThreadId: str
               className="hagi-bots-threadrow hagi-bots-threadrow--child"
               style={{ width: "100%", border: "none", background: "none", cursor: "pointer", font: "inherit", textAlign: "left" }}
               data-active={activeThreadId === child.id || undefined}
-              onClick={() => navigate.toPluginPanel("bots", { subPath: `bots/${bot.id}/threads/${child.id}` })}
+              onClick={() => openThread(child.id)}
             >
               <StatusDot status={child.status} />
               <span style={{ flex: 1 }}>{child.title}</span>
@@ -107,9 +111,8 @@ function ThreadRows({ bot, activeThreadId }: { bot: MockBot; activeThreadId: str
   );
 }
 
-function BotDetail({ bot, threadId }: { bot: MockBot; threadId: string | null }) {
+function BotDetail({ bot, threadId, live, userMd }: { bot: MockBot; threadId: string | null; live: boolean; userMd: string }) {
   const [tab, setTab] = useState<"threads" | "context" | "projects">("threads");
-  const userMd = useUserMd();
   useEffect(() => {
     if (threadId) setTab("threads");
   }, [threadId]);
@@ -125,18 +128,20 @@ function BotDetail({ bot, threadId }: { bot: MockBot; threadId: string | null })
           </p>
           <StatusChip status={botStatus(bot)} detail={bot.lastActivity} />
         </div>
-        <button
-          type="button"
-          className="hagi-bots-btn"
-          onClick={() => addMockThread(bot.id, `Hội thoại mới ${new Date().toLocaleTimeString()}`)}
-        >
-          ＋ Hội thoại mới
-        </button>
+        {live ? null : (
+          <button
+            type="button"
+            className="hagi-bots-btn"
+            onClick={() => addMockThread(bot.id, `Hội thoại mới ${new Date().toLocaleTimeString()}`)}
+          >
+            ＋ Hội thoại mới
+          </button>
+        )}
         <button type="button" className="hagi-bots-btn hagi-bots-btn--primary" onClick={() => openEditor({ kind: "edit", botId: bot.id })}>
           Sửa bot
         </button>
       </div>
-      {threadId ? <p className="hagi-bots-note">Đang chọn thread giả: {threadId} — bản thật sẽ mở đúng hội thoại của bot.</p> : null}
+      {threadId ? <p className="hagi-bots-note">Đang chọn thread: {threadId}</p> : null}
       <div className="hagi-bots-tabs" role="tablist">
         {(
           [
@@ -151,7 +156,7 @@ function BotDetail({ bot, threadId }: { bot: MockBot; threadId: string | null })
         ))}
       </div>
       <motion.div key={activeTab} initial={{ opacity: 0, y: 6 }} animate={{ opacity: 1, y: 0 }} transition={{ duration: 0.2 }}>
-      {activeTab === "threads" ? <ThreadRows bot={bot} activeThreadId={threadId} /> : null}
+      {activeTab === "threads" ? <ThreadRows bot={bot} activeThreadId={threadId} live={live} /> : null}
       {activeTab === "context" ? (
         <div style={{ display: "flex", flexDirection: "column", gap: 12 }}>
           <div>
@@ -240,10 +245,12 @@ function OverviewStrip({ bots }: { bots: MockBot[] }) {
 }
 
 // Thẻ USER.md dùng chung cho mọi bot (hồ sơ người dùng — ý tưởng Hermes/OpenClaw).
-function UserMdCard() {
-  const userMd = useUserMd();
+function UserMdCard({ userMd, onSave }: { userMd: string; onSave: (next: string) => void }) {
   const [draft, setDraft] = useState(userMd);
   const [dirty, setDirty] = useState(false);
+  useEffect(() => {
+    if (!dirty) setDraft(userMd);
+  }, [userMd, dirty]);
   return (
     <div style={{ display: "flex", flexDirection: "column", gap: 6 }}>
       <div style={{ fontSize: 11, fontWeight: 600, color: "var(--muted-foreground)" }}>USER.md · hồ sơ của bạn, dùng chung cho mọi bot</div>
@@ -262,7 +269,7 @@ function UserMdCard() {
             type="button"
             className="hagi-bots-btn hagi-bots-btn--primary"
             onClick={() => {
-              saveUserMd(draft);
+              onSave(draft);
               setDirty(false);
             }}
           >
@@ -277,10 +284,12 @@ function UserMdCard() {
 // Nội dung chính của trang Bots (slot component trong navPanel).
 export function BotsPage({ subPath }: PluginNavPanelProps) {
   const { values, isLoading } = useSettings();
-  const bots = useBots();
+  const data = useDataBots();
+  const bots = data.bots;
   const editorTarget = useEditorTarget();
   const current = parseSubPath(subPath);
   const navigate = useBbNavigate();
+  const rpc = useRpc<typeof rpcContract>();
 
   if (isLoading) return <div className="hagi-bots-page">Đang tải…</div>;
   if (values?.botsPanel !== true) {
@@ -296,11 +305,18 @@ export function BotsPage({ subPath }: PluginNavPanelProps) {
   const bot = current.botId ? bots.find((entry) => entry.id === current.botId) : null;
   return (
     <div className="hagi-bots-page">
-      {editorTarget ? <BotEditor target={editorTarget} /> : null}
+      {editorTarget ? <BotEditor target={editorTarget} live={data.live} bots={bots} refresh={data.refresh} /> : null}
       {current.botId === null ? (
         <>
-          <p className="hagi-bots-note">Bản vỏ UI — dữ liệu giả trong bộ nhớ, mất khi tải lại. Chưa nối trạng thái thật.</p>
-          {values?.botsBackend === true ? <ImportLegacyButton /> : null}
+          {data.live ? (
+            <>
+              <ImportLegacyButton />
+              {data.loading ? <p className="hagi-bots-note">Đang tải dữ liệu bot thật…</p> : null}
+              {data.error ? <p className="hagi-bots-note hagi-bots-note--error">Lỗi backend: {data.error}</p> : null}
+            </>
+          ) : (
+            <p className="hagi-bots-note">Bản vỏ UI — dữ liệu giả trong bộ nhớ. Bật "Backend bots (thật)" để dùng dữ liệu nhập từ Bots Sidebar.</p>
+          )}
           <OverviewStrip bots={bots} />
           <div className="hagi-bots-grid">
             {bots.map((entry, index) => (
@@ -310,11 +326,17 @@ export function BotsPage({ subPath }: PluginNavPanelProps) {
               ＋ Bot mới
             </button>
           </div>
-          <UserMdCard />
+          <UserMdCard
+            userMd={data.userMd}
+            onSave={(next) => {
+              if (data.live) void rpc.call("hb_user_md_set", { content: next }).then(() => data.refresh());
+              else saveUserMd(next);
+            }}
+          />
           <ActivityFeed bots={bots} />
         </>
       ) : bot ? (
-        <BotDetail bot={bot} threadId={current.threadId} />
+        <BotDetail bot={bot} threadId={current.threadId} live={data.live} userMd={data.userMd} />
       ) : (
         <div>
           <p className="hagi-bots-note">Không thấy bot này (có thể vừa bị xoá trong phiên giả).</p>

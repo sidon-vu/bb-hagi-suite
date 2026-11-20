@@ -1,6 +1,8 @@
 import { useState } from "react";
 import { motion } from "motion/react";
-import { closeEditor, saveBot, useBots, type BotDraft, type EditorTarget, type MockBot } from "./mock-store";
+import { useRpc } from "@get-bb/plugin-sdk/app";
+import { closeEditor, saveBot, type BotDraft, type EditorTarget, type MockBot } from "./mock-store";
+import type { rpcContract } from "./hagi-contract";
 
 const COLORS = ["#8b5cf6", "#06b6d4", "#f59e0b", "#ef4444", "#22c55e", "#ec4899"];
 const SHAPES: { id: MockBot["shape"]; label: string }[] = [
@@ -9,9 +11,9 @@ const SHAPES: { id: MockBot["shape"]; label: string }[] = [
   { id: "hex", label: "Lục giác" },
 ];
 
-// Dialog tạo/sửa GIẢ: chỉ ghi vào store trong bộ nhớ, mất khi reload.
-export function BotEditor({ target }: { target: EditorTarget }) {
-  const bots = useBots();
+// Dialog tạo/sửa: live → RPC hb_bot_create/hb_bot_update (CAS); mock → store in-memory.
+export function BotEditor({ target, live, bots, refresh }: { target: EditorTarget; live: boolean; bots: MockBot[]; refresh: () => void }) {
+  const rpc = useRpc<typeof rpcContract>();
   const editing = target.kind === "edit" ? bots.find((bot) => bot.id === target.botId) : undefined;
   const [draft, setDraft] = useState<BotDraft>(() =>
     editing
@@ -22,6 +24,7 @@ export function BotEditor({ target }: { target: EditorTarget }) {
   if (target.kind === "edit" && !editing) return null;
 
   const set = (patch: Partial<BotDraft>) => setDraft((current) => ({ ...current, ...patch }));
+  const [busy, setBusy] = useState(false);
   const submit = () => {
     if (!draft.name.trim()) {
       setError("Đặt tên cho bot.");
@@ -31,17 +34,36 @@ export function BotEditor({ target }: { target: EditorTarget }) {
       setError("MEMORY tối đa 3000 ký tự.");
       return;
     }
-    saveBot({ ...draft, name: draft.name.trim() }, editing?.id);
-    closeEditor();
+    const clean = { ...draft, name: draft.name.trim() };
+    if (!live) {
+      saveBot(clean, editing?.id);
+      closeEditor();
+      return;
+    }
+    setBusy(true);
+    void (async () => {
+      try {
+        if (editing) await rpc.call("hb_bot_update", { botId: editing.id, expectedUpdatedAt: editing.updatedAt ?? 0, ...clean });
+        else await rpc.call("hb_bot_create", clean);
+        refresh();
+        closeEditor();
+      } catch (e) {
+        setError(e instanceof Error ? e.message : String(e));
+      } finally {
+        setBusy(false);
+      }
+    })();
   };
 
   return (
     <motion.div className="hagi-bots-editor__backdrop" onClick={closeEditor} initial={{ opacity: 0 }} animate={{ opacity: 1 }} transition={{ duration: 0.15 }}>
       <motion.div className="hagi-bots-editor" role="dialog" aria-modal="true" aria-label={editing ? "Sửa bot" : "Tạo bot"} onClick={(event) => event.stopPropagation()} initial={{ opacity: 0, scale: 0.95, y: 8 }} animate={{ opacity: 1, scale: 1, y: 0 }} transition={{ duration: 0.2 }}>
         <h2>{editing ? `Sửa ${editing.name}` : "Tạo bot"}</h2>
-        <p className="hagi-bots-note" style={{ margin: 0 }}>
-          Dữ liệu giả — lưu vào bộ nhớ, mất khi tải lại trang.
-        </p>
+        {live ? null : (
+          <p className="hagi-bots-note" style={{ margin: 0 }}>
+            Dữ liệu giả — lưu vào bộ nhớ, mất khi tải lại trang.
+          </p>
+        )}
         <div className="hagi-bots-editor__row">
           <label>
             Tên bot
@@ -97,7 +119,7 @@ export function BotEditor({ target }: { target: EditorTarget }) {
           <button type="button" className="hagi-bots-btn" onClick={closeEditor}>
             Huỷ
           </button>
-          <button type="button" className="hagi-bots-btn hagi-bots-btn--primary" onClick={submit}>
+          <button type="button" className="hagi-bots-btn hagi-bots-btn--primary" disabled={busy} onClick={submit}>
             Lưu
           </button>
         </div>

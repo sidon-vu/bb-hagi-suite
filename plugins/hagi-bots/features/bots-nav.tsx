@@ -1,12 +1,15 @@
 import { useState } from "react";
 import { useBbNavigate } from "@get-bb/plugin-sdk/app";
 import type { PluginNavPanelProps } from "@get-bb/plugin-sdk/app";
-import { useBots, openEditor, type MockBot } from "./mock-store";
+import { openEditor, type MockBot } from "./mock-store";
+import { useDataBots } from "./live-store";
 import { BotAvatar, StatusDot } from "./bot-avatar";
 import { parseSubPath } from "./routes";
 
-function NavBot({ bot, current }: { bot: MockBot; current: { botId: string | null; threadId: string | null } }) {
+function NavBot({ bot, current, live }: { bot: MockBot; current: { botId: string | null; threadId: string | null }; live: boolean }) {
   const navigate = useBbNavigate();
+  const openThread = (threadId: string) =>
+    live ? navigate.toThread(threadId) : navigate.toPluginPanel("bots", { subPath: `bots/${bot.id}/threads/${threadId}` });
   const active = current.botId === bot.id;
   const [open, setOpen] = useState(active);
   return (
@@ -45,7 +48,7 @@ function NavBot({ bot, current }: { bot: MockBot; current: { botId: string | nul
                 className="hagi-bots-nav__item hagi-bots-nav__thread"
                 style={{ width: "100%" }}
                 aria-current={current.threadId === thread.id ? "page" : undefined}
-                onClick={() => navigate.toPluginPanel("bots", { subPath: `bots/${bot.id}/threads/${thread.id}` })}
+                onClick={() => openThread(thread.id)}
               >
                 <StatusDot status={thread.status} />
                 <span style={{ minWidth: 0, flex: 1, overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap" }}>
@@ -59,7 +62,7 @@ function NavBot({ bot, current }: { bot: MockBot; current: { botId: string | nul
                   className="hagi-bots-nav__item hagi-bots-nav__thread"
                   style={{ width: "100%", paddingLeft: 40 }}
                   aria-current={current.threadId === child.id ? "page" : undefined}
-                  onClick={() => navigate.toPluginPanel("bots", { subPath: `bots/${bot.id}/threads/${child.id}` })}
+                  onClick={() => openThread(child.id)}
                 >
                   <StatusDot status={child.status} />
                   <span style={{ minWidth: 0, flex: 1, overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap" }}>
@@ -83,7 +86,7 @@ function NavBot({ bot, current }: { bot: MockBot; current: { botId: string | nul
 // Cột trái riêng của trang Bots (slot experimental_sidebar trong navPanel).
 export function BotsPanelNav({ subPath }: PluginNavPanelProps) {
   const navigate = useBbNavigate();
-  const bots = useBots();
+  const { bots, live } = useDataBots();
   const current = parseSubPath(subPath);
   return (
     <nav className="hagi-bots-nav" aria-label="Bots">
@@ -110,7 +113,7 @@ export function BotsPanelNav({ subPath }: PluginNavPanelProps) {
         <span style={{ color: "var(--muted-foreground)", fontSize: 10 }}>{bots.length}</span>
       </button>
       {bots.map((bot) => (
-        <NavBot key={bot.id} bot={bot} current={current} />
+        <NavBot key={bot.id} bot={bot} current={current} live={live} />
       ))}
     </nav>
   );
